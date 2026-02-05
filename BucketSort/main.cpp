@@ -52,8 +52,17 @@ int main() {
 		}
 	}
 	//printArray(input, 1 << 16);
-	bucketSort(input, 1 << 16, 64 - 8, 0);
+	
+	
+	//bucketSort(input, 1 << 16, 64 - 8, 0);
 
-	printArray(input, 1 << 16);
+	//printArray(input, 1 << 16);
+
+	uint64_t* test = new uint64_t[1 << 4];
+	for (size_t i = 0; i < 1 << 4; i++) {
+		test[i] = (1 << 4) - i;
+	}
+	std::sort(test, test + (1 << 4));
+	printArray(test, 1<< 4);
 	
 }

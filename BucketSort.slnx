@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="BucketSort/BucketSort.vcxproj" />
+  <Project Path="BucketSort/BucketSort.vcxproj" Id="822274d4-1ee9-4dbe-941f-f43a7bb8a98e" />
 </Solution>

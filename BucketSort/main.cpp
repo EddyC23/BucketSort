@@ -1,6 +1,7 @@
 #include <iostream>
-#include <windows.h>
 #include <algorithm>
+#include <windows.h>
+#include <BucketSort.h>
 void printArray(uint64_t* ptr, uint64_t size) {
 	for (size_t i = 0; i < size; i++) {
 		std::cout << "index" << i << " : " << ptr[i] << "\n";
@@ -11,13 +12,14 @@ const int D = 8;
 const int K = 1 << 8;
 uint64_t* bucket[D + 1][K];
 uint64_t* output = new uint64_t[1 << 16];
+uint64_t* base = output;
 // depth of 8 64 bits with 8 bits looked at per bucket
 // 1 << 8 2 ^ 8 buckets 
 
 void bucketSort(uint64_t * buf, uint64_t size, int shift, int level) {
 	//printArray(buf, size);
 	uint64_t ** p = &bucket[level][0];
-	
+	std::cout << level << " " << shift << "\n";
 	if (level ==  8) {
 		
 		for (uint64_t j = 0; j < K; j++) {
@@ -57,8 +59,8 @@ void bucketSort(uint64_t * buf, uint64_t size, int shift, int level) {
 		}
 		else {
 			std::sort(p[j], p[j] + sizeNext);
-			std::cout << "After Calling STD SORT THIS WILL BE APPENDED" << "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||" << "\n";
-			printArray(p[j], sizeNext);
+			//std::cout << "After Calling STD SORT THIS WILL BE APPENDED" << "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||" << "\n";
+			//printArray(p[j], sizeNext);
 			memcpy(output, p[j], sizeof(uint64_t) * sizeNext);
 			output += sizeNext;
 		}
@@ -70,7 +72,7 @@ void bucketSort(uint64_t * buf, uint64_t size, int shift, int level) {
 int main() {
 	uint64_t* input = new uint64_t[1 << 16];
 	for (size_t i = 0; i < 1 << 16; i++) {
-		input[i] = i;
+		input[i] = (1 << 16) - i;
 		
 	}
 	
@@ -79,11 +81,11 @@ int main() {
 	}
 	
 
-	
+	//printArray(input, 1 << 16);
 	
 	bucketSort(input, 1 << 16, 64 - 8, 0);
 	
-	printArray(output, 1 << 16);
+//	printArray(base, 1 << 16);
 
 	
 	

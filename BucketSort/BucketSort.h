@@ -15,4 +15,6 @@ class BucketSort {
 	public:	
 		BucketSort(uint64_t * inputBuffer, uint64_t * outputBuffer, uint64_t size);
 		void sort();
+		void printArray(uint64_t* ptr, uint64_t size);
+		bool isSorted();
 };

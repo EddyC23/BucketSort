@@ -1,5 +1,14 @@
 #include "BucketSort.h"
 #include <algorithm>
+#include <iostream>
+#include <iomanip>
+
+void BucketSort::printArray(uint64_t* ptr, uint64_t size) {
+	for (size_t i = 0; i < size; i++) {
+		std::cout << "index" << i << " : " << ptr[i] << "\n";
+	}
+}
+
 BucketSort::BucketSort(uint64_t* inputBuffer, uint64_t* outputBuffer, uint64_t size) {
 	this->inputBuffer = inputBuffer;
 	this->outputBuffer = outputBuffer;
@@ -8,26 +17,26 @@ BucketSort::BucketSort(uint64_t* inputBuffer, uint64_t* outputBuffer, uint64_t s
 	this->depthRecursion = 8;
 	this->numBuckets = 1 << 8;
 	this->buckets = new uint64_t **[8 + 1];
-	//bucket is a triple pointer
-	// pointer to a array(pointer) that is (array of int * [numBckets])
+	
 	for (size_t i = 0; i < depthRecursion + 1; i++) {
 		this->buckets[i] = new uint64_t *[numBuckets];
+		//std::cout << "Index : " <<std::setw(4) << i << " " << this->buckets[i] << "\n";
 	}
 	for (size_t i = 0; i < numBuckets; i++) {
-		this->buckets[0][i] = new uint64_t[(1 << 16) * 8];
+		this->buckets[0][i] = new uint64_t[size >> 7];
+		// = 1/256(size) (1 - (1/256)^8) / (1 - 1/256) = n/255 // n/128 > n/255 closest 2 power greater than the alloc
+		std::cout << "Index : " << std::setw(4)<<  i <<" " << this->buckets[i] << "\n";
 	}
-
-	//D + 1 because need one more row to store the size of the buckets 
 }
 void BucketSort::sort() {
 	outputBufferNext = outputBuffer;
 	sort(inputBuffer, size, 56, 0);
 }
-void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
-	
 
-	uint64_t** p = &buckets[level][0];
-	uint64_t** pNext = p + numBuckets;
+void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
+	uint64_t** p = buckets[level];
+	uint64_t** pNext = buckets[level + 1];
+	//std::cout << p << " " << level;
 	memcpy(pNext, p, sizeof(uint64_t*) * numBuckets);
 
 	for (uint64_t i = 0; i < size; i++) {
@@ -38,18 +47,29 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 
 	for (uint64_t j = 0; j < numBuckets; j++) {
 		uint64_t sizeNext = pNext[j] - p[j];
-		//base case
 		if (shift == 0) {
+			
 			memcpy(outputBufferNext, p[j], sizeof(uint64_t) * sizeNext);
+			//std::cout << isSorted(outputBufferNext, sizeNext);
 			outputBufferNext += sizeNext;
 		}else if (sizeNext > 32) {
 			sort(p[j], sizeNext, shift - 8, level + 1);
 		}
 		else {
-			std::sort(p[j], p[j] + sizeNext);
+			std::sort(p[j], pNext[j]);
+			//printArray(p[j],sizeNext);
 			memcpy(outputBufferNext, p[j], sizeof(uint64_t) * sizeNext);
+			//std::cout << isSorted(outputBufferNext, sizeNext);
 			outputBufferNext += sizeNext;
 		}
 
 	}
+}
+
+bool BucketSort::isSorted() {
+	for (uint64_t i = 1; i < size; i++) {
+		if (outputBuffer[i] < outputBuffer[i - 1]) {
+			return false;
+		}
+	}return true;
 }

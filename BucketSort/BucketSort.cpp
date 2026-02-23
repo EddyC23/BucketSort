@@ -9,7 +9,7 @@ void BucketSort::printArray(uint64_t* ptr, uint64_t size) {
 	}
 }
 
-BucketSort::BucketSort(uint64_t* inputBuffer, uint64_t* outputBuffer, uint64_t size) {
+BucketSort::BucketSort(uint64_t* inputBuffer, uint64_t* outputBuffer, uint64_t size, int flag) {
 	this->inputBuffer = inputBuffer;
 	this->outputBuffer = outputBuffer;
 	this->outputBufferNext = outputBuffer;
@@ -17,6 +17,7 @@ BucketSort::BucketSort(uint64_t* inputBuffer, uint64_t* outputBuffer, uint64_t s
 	this->depthRecursion = 8;
 	this->numBuckets = 1 << 8;
 	this->buckets = new uint64_t **[8 + 1];
+	this->flag = flag;
 	
 	for (size_t i = 0; i < depthRecursion + 1; i++) {
 		this->buckets[i] = new uint64_t *[numBuckets];
@@ -25,7 +26,7 @@ BucketSort::BucketSort(uint64_t* inputBuffer, uint64_t* outputBuffer, uint64_t s
 	for (size_t i = 0; i < numBuckets; i++) {
 		this->buckets[0][i] = new uint64_t[size >> 7];
 		// = 1/256(size) (1 - (1/256)^8) / (1 - 1/256) = n/255 // n/128 > n/255 closest 2 power greater than the alloc
-		std::cout << "Index : " << std::setw(4)<<  i <<" " << this->buckets[i] << "\n";
+		//std::cout << "Index : " << std::setw(4)<<  i <<" " << this->buckets[i] << "\n";
 	}
 }
 void BucketSort::sort() {
@@ -43,6 +44,9 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 		uint64_t mask = (1 << 8) - 1;
 		uint64_t idx = (buf[i] >> shift) & mask;
 		*pNext[idx]++ = buf[i];
+	}
+	if (flag == level) {
+		return;
 	}
 
 	for (uint64_t j = 0; j < numBuckets; j++) {
@@ -64,6 +68,7 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 		}
 
 	}
+	
 }
 
 bool BucketSort::isSorted() {

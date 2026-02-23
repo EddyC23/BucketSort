@@ -18,11 +18,14 @@ int main() {
 	}
 	//flag stops after different levels eg L0 l1 to time benchmark
 	//L0 with vortex S stream 5.3, append only can improve, corner cases
-	//interval tree
+	// 
+	//interval tree later
 	//flag as parameter
 	//static is ceiling 
-	BucketSort b(input, output, 1 << 16);
+	BucketSort b(input, output, 1 << 16, 0);
+	//put the timers here
 	b.sort();
+	//
 	b.printArray(output, 1 << 16);
 	std::cout << b.isSorted();
 }

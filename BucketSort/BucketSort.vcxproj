@@ -128,10 +128,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BucketSort.cpp" />
+    <ClCompile Include="IntervalTree.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="StreamPool.cpp" />
+    <ClCompile Include="VortexS.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BucketSort.h" />
+    <ClInclude Include="IntervalTree.h" />
+    <ClInclude Include="StreamPool.h" />
+    <ClInclude Include="VortexS.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

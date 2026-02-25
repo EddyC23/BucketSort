@@ -1,19 +1,39 @@
 #include "StreamManager.h"
-#include ""
-StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower) {
-
-	for (size_t i = 0; i < numStreams; i++) {
-		VortexS* temp = new VortexS(sizeStreamPower);
-		startAddressToStream[temp->startPtr] = temp;
-	}
+#include <iostream>
+StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint64_t sizeBlockPower, uint64_t additionalBlocks) {
 	
+	EnableLockPrivileges();
+	if (AddVectoredExceptionHandler(1, handler) == NULL) {
+		std::cout << "add vectored exception handler failed";
+		std::cout << GetLastError();
+		exit(-1);
+	}
+	this->instance = this;
+	this->sizeStreamPower = sizeStreamPower;
+	this->numStreams = numStreams;
+	StreamPool* blockPool = new StreamPool(sizeStreamPower, sizeBlockPower, additionalBlocks);
+	for (size_t i = 0; i < numStreams; i++) {
+		streams[i] = new VortexS(sizeStreamPower, blockPool);
+		
+	}
+	int x = 5;
+
 }
-LONG StreamManager::handler(PEXCEPTION_POINTERS info) {
-	info->ExceptionRecord->ExceptionInformation[1]
+LONG WINAPI StreamManager::handler(PEXCEPTION_POINTERS info) {
+	VortexS* streamPtr = instance->getStreamFromAddress((ULONG_PTR)(info->ExceptionRecord->ExceptionAddress));
+	if (streamPtr == nullptr) {
+		std::cout << "Stream not found...\n";
+		exit(-1);
+	}
+	return streamPtr->handle_exception(info);
 }
-VortexS* StreamManager::getStreamFromAddress(PVOID fault) {
-	ULONG_PTR ptr = ULONGPTR(fault)
-	return ptr & (1ULL )
+VortexS* StreamManager::getStreamFromAddress(ULONG_PTR faultAddress) {
+	for (uint64_t i = 0; i < numStreams; i++) {
+		if (faultAddress >= streams[i]->getStartPtr() && faultAddress < streams[i]->getEndPtr()) {
+			return *(streams + i);
+		}	
+	}
+	return nullptr;
 }
 BOOL StreamManager::EnableLockPrivileges() {
 	//sets enable lock privileges

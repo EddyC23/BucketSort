@@ -21,13 +21,13 @@
     <ClCompile Include="BucketSort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IntervalTree.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="VortexS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StreamPool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StreamManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,14 +35,14 @@
     <ClInclude Include="BucketSort.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="IntervalTree.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="VortexS.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="StreamPool.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StreamManager.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

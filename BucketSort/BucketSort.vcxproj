@@ -128,14 +128,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BucketSort.cpp" />
-    <ClCompile Include="IntervalTree.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="StreamManager.cpp" />
     <ClCompile Include="StreamPool.cpp" />
     <ClCompile Include="VortexS.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BucketSort.h" />
-    <ClInclude Include="IntervalTree.h" />
+    <ClInclude Include="StreamManager.h" />
     <ClInclude Include="StreamPool.h" />
     <ClInclude Include="VortexS.h" />
   </ItemGroup>

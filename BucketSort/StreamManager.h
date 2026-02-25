@@ -1,20 +1,18 @@
 #pragma once
 #include "VortexS.h"
 #include "StreamPool.h"
-#include "IntervalTree.h"
 #include <unordered_map>
 class StreamManager {
 public:
 	StreamManager(uint64_t numStreams, uint64_t sizeStreams);
 private:
-	//struct Interval{
-	//	ULONG_PTR start;
-	//	ULONG_PTR end;
-	//};
-	IntervalTree intervals;
+	static StreamManager* instance;
 	BOOL EnableLockPrivileges();
-	static LONG handler(PEXCEPTION_POINTERS info);
+	static LONG WINAPI handler(PEXCEPTION_POINTERS info);
 	VortexS** streams;
-	std::unordered_map<ULONG_PTR, VortexS*> startAddressToStream;
-	VortexS* getStream(ULONG_PTR faultAddress);
+	uint64_t numStreams;
+	uint64_t sizeStreamPower;
+	//std::unordered_map<ULONG_PTR, VortexS*> startAddressToStream;
+	VortexS* getStreamFromAddress(ULONG_PTR faultAddress);
+	
 };

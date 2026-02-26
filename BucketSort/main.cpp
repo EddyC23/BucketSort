@@ -37,7 +37,14 @@ int main() {
 	std::mt19937 gen(rd());
 	std::uniform_int_distribution<uint64_t> distribution(0);
 
-	uint64_t* input = new uint64_t[1 << 16];
+	//StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint64_t sizeBlockPower, uint64_t additionalBlocks) 
+	uint64_t numStreams = 1 + (1 << 8); // inputstream + 2^8 bucket
+	uint64_t sizeStreamPower = 3 + 16;
+	uint64_t sizeBlockPower = 12;
+	uint64_t additionalBlocks = (1ULL << (19 - 12)) + 8;//should be 8, append only right now though
+	StreamManager sm(numStreams, sizeStreamPower, sizeBlockPower, additionalBlocks);
+
+	uint64_t* input = (uint64_t*)sm.getInputStream()->getStartPtr();
 	uint64_t* output = new uint64_t[1 << 16];
 	for (size_t i = 0; i < 1 << 16; i++) {
 		input[i] = distribution(gen);
@@ -46,5 +53,6 @@ int main() {
 	b.sort();
 	b.printArray(output, 1 << 16);
 	std::cout << b.isSorted();
-	StreamManager sm(10, 30);
+
+	
 }

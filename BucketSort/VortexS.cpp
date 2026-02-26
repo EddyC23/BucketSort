@@ -1,9 +1,10 @@
 #include "VortexS.h"
 #include <cstdio>
 #include <iostream>
-VortexS::VortexS(uint64_t sizeStreamPower) {
+VortexS::VortexS(uint64_t sizeStreamPower, StreamPool* blockPool) {
 	this->startPtr = VirtualAlloc(NULL, 1ULL << sizeStreamPower, MEM_RESERVE | MEM_PHYSICAL, PAGE_READWRITE);
 	this->endPtr = (void*)((char*)this->startPtr + (1ULL << sizeStreamPower));
+	this->blockPool = blockPool;
 	if (this->startPtr == NULL) {
 		std::cout << "virtual alloc failed";
 		std::cout << GetLastError();
@@ -21,7 +22,7 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 		bool isWriteFault = info->ExceptionRecord->ExceptionInformation[0];
 		ULONG_PTR fptr = info->ExceptionRecord->ExceptionInformation[1];
 		if (isWriteFault) {
-
+			blockPool->mapBlockFromPool(fptr);
 		}
 		else {
 			//should trigger guard page fault for read faults. 

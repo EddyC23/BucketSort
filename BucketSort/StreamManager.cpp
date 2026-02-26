@@ -1,5 +1,8 @@
 #include "StreamManager.h"
 #include <iostream>
+
+StreamManager* StreamManager::instance = nullptr;
+
 StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint64_t sizeBlockPower, uint64_t additionalBlocks) {
 	
 	EnableLockPrivileges();
@@ -8,13 +11,16 @@ StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint
 		std::cout << GetLastError();
 		exit(-1);
 	}
-	this->instance = this;
+
+	StreamPool* blockPool = new StreamPool(sizeStreamPower, sizeBlockPower, additionalBlocks);
+	instance = this;
 	this->sizeStreamPower = sizeStreamPower;
 	this->numStreams = numStreams;
-	StreamPool* blockPool = new StreamPool(sizeStreamPower, sizeBlockPower, additionalBlocks);
-	for (size_t i = 0; i < numStreams; i++) {
-		streams[i] = new VortexS(sizeStreamPower, blockPool);
-		
+	this->inputStream = new VortexS(sizeStreamPower, blockPool);
+	this->streams = new VortexS * [numStreams];
+	this->streams[0] = inputStream;
+	for (size_t i = 1; i < numStreams; i++) {
+		streams[i] = new VortexS(sizeStreamPower, blockPool);	
 	}
 	int x = 5;
 
@@ -29,12 +35,19 @@ LONG WINAPI StreamManager::handler(PEXCEPTION_POINTERS info) {
 }
 VortexS* StreamManager::getStreamFromAddress(ULONG_PTR faultAddress) {
 	for (uint64_t i = 0; i < numStreams; i++) {
+		std::cout << "Start : " << streams[i]->getStartPtr() << " END : " << streams[i]->getEndPtr() << "\n";
+	}
+	for (uint64_t i = 0; i < numStreams; i++) {
 		if (faultAddress >= streams[i]->getStartPtr() && faultAddress < streams[i]->getEndPtr()) {
 			return *(streams + i);
 		}	
 	}
 	return nullptr;
 }
+VortexS* StreamManager::getInputStream() {
+	return this->inputStream;
+}
+
 BOOL StreamManager::EnableLockPrivileges() {
 	//sets enable lock privileges
 	HANDLE hToken;

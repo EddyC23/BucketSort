@@ -28,22 +28,24 @@ StreamPool::StreamPool(uint64_t inputSizePower, uint64_t blockSizePower, uint64_
 		blockPool.push(arrayPFN + i * pagesPerBlock);
 	}
 }
-void StreamPool::mapBlockFromPool(void* ptr) {
+void StreamPool::mapBlockFromPool(ULONG_PTR ptr) {
+	void* vptr = (void*)ptr;
 	PULONG_PTR pageArray = blockPool.top();
-	blockPool.pop();
 	uint64_t blockSizePages = 1ULL << (blockSizePower - 12);
-	if (!MapUserPhysicalPages(ptr, blockSizePages, pageArray)) {
+	blockPool.pop();
+	if (!MapUserPhysicalPages(vptr, blockSizePages, pageArray)) {
 		std::cout << "map block failed";
 		std::cout << GetLastError();
 		exit(-1);
 	}
 }
-void StreamPool::unmapBlockToPool(void* ptr) {
+void StreamPool::unmapBlockToPool(ULONG_PTR ptr) {
+	void* vptr = (void*)ptr;
 	uint64_t blockSizePages = 1ULL << (blockSizePower - 12);
-	if (!MapUserPhysicalPages(ptr, blockSizePages, NULL)) {
+	blockPool.push(ptrToPFN[vptr]);
+	if (!MapUserPhysicalPages(vptr, blockSizePages, NULL)) {
 		std::cout << "unmap block failed";
 		std::cout << GetLastError();
 		exit(-1);
 	}
-	blockPool.push(ptrToPFN[ptr]);
 }

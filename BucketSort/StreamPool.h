@@ -6,8 +6,8 @@
 class StreamPool {
 public:
 	StreamPool(uint64_t inputSizePower, uint64_t blockSizePower, uint64_t additionalBlocks);
-	void mapBlockFromPool(void* ptr);
-	void unmapBlockToPool(void* ptr);
+	void mapBlockFromPool(ULONG_PTR ptr);
+	void unmapBlockToPool(ULONG_PTR ptr);
 private:
 	uint64_t inputSizePower;
 	uint64_t additionalBlocks;

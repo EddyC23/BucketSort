@@ -1,6 +1,7 @@
 #include "StreamManager.h"
 #include <iostream>
 
+
 StreamManager* StreamManager::instance = nullptr;
 
 StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint64_t sizeBlockPower, uint64_t additionalBlocks) {
@@ -26,22 +27,31 @@ StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint
 
 }
 LONG WINAPI StreamManager::handler(PEXCEPTION_POINTERS info) {
-	VortexS* streamPtr = instance->getStreamFromAddress((ULONG_PTR)(info->ExceptionRecord->ExceptionAddress));
-	if (streamPtr == nullptr) {
-		std::cout << "Stream not found...\n";
-		exit(-1);
+	bool isAccessViolation = info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION;
+	if (isAccessViolation) {
+		VortexS* streamPtr = instance->getStreamFromAddress((ULONG_PTR)(info->ExceptionRecord->ExceptionInformation[1]));
+		if (streamPtr == nullptr) {
+			std::cout << "Stream not found...\n";
+		}
+		return streamPtr->handle_exception(info);
 	}
-	return streamPtr->handle_exception(info);
+	return 0;
 }
 VortexS* StreamManager::getStreamFromAddress(ULONG_PTR faultAddress) {
 	for (uint64_t i = 0; i < numStreams; i++) {
-		std::cout << "Start : " << streams[i]->getStartPtr() << " END : " << streams[i]->getEndPtr() << "\n";
+		//printf("%d %llx %llx \n", i, streams[i]->getStartPtr(), streams[i]->getEndPtr());
+		//std::cout << "Start : " << streams[i]->getStartPtr() << " END : " << streams[i]->getEndPtr() << "\n";
 	}
 	for (uint64_t i = 0; i < numStreams; i++) {
 		if (faultAddress >= streams[i]->getStartPtr() && faultAddress < streams[i]->getEndPtr()) {
+			printf("Found in %d", i);
 			return *(streams + i);
 		}	
-	}
+	}//page fualts benchmark random 0 to 256 and fault into and see how long search takes for hash vs linaer benchmark in release mode
+	//do we need  a interval tree
+	// std:: set upper bound implemeneted as a tree 
+	// interval tree -> hashmap to vortex stream
+	printf("%llx \n", faultAddress);
 	return nullptr;
 }
 VortexS* StreamManager::getInputStream() {

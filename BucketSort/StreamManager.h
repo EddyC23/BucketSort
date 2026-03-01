@@ -2,19 +2,27 @@
 #include "VortexS.h"
 #include "StreamPool.h"
 #include <unordered_map>
+#include <set>
 class StreamManager {
 public:
 	StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint64_t sizeBlockPower, uint64_t additionalBlocks);
+	VortexS* getStreamFromAddressLinear(ULONG_PTR faultAddress);
+	VortexS* getStreamFromAddressHash(ULONG_PTR faultAddress);
+	VortexS* getStreamFromAddressInterval(ULONG_PTR faultAddress);
 	VortexS* getInputStream();
+	ULONG_PTR* testStreams;
 private:
 	static StreamManager* instance;
 	BOOL EnableLockPrivileges();
 	static LONG WINAPI handler(PEXCEPTION_POINTERS info);
-	VortexS** streams;
 	VortexS* inputStream;
 	uint64_t numStreams;
 	uint64_t sizeStreamPower;
-	//std::unordered_map<ULONG_PTR, VortexS*> startAddressToStream;
-	VortexS* getStreamFromAddress(ULONG_PTR faultAddress);
+	
+
+	VortexS** streams;
+	std::unordered_map<ULONG_PTR, VortexS*> startAddressToStream;
+	std::unordered_map<ULONG_PTR, VortexS*> endAddressToStream;
+	std::set<ULONG_PTR> intervalTree;
 	
 };

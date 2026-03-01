@@ -19,17 +19,25 @@ StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint
 	this->numStreams = numStreams;
 	this->inputStream = new VortexS(sizeStreamPower, blockPool);
 	this->streams = new VortexS * [numStreams];
+	this->testStreams = new ULONG_PTR[numStreams];
+
 	this->streams[0] = inputStream;
 	for (size_t i = 1; i < numStreams; i++) {
 		streams[i] = new VortexS(sizeStreamPower, blockPool);	
 	}
-	int x = 5;
+	for (size_t i = 0; i < numStreams; i++) {
+		testStreams[i] = (ULONG_PTR)streams[i]->getStartPtr();
+		startAddressToStream[(ULONG_PTR)streams[i]->getStartPtr() >> sizeStreamPower] = streams[i];
+		intervalTree.insert(streams[i]->getEndPtr());
+		endAddressToStream[(ULONG_PTR)streams[i]->getEndPtr()] = streams[i];
+		printf("%llx \n", (ULONG_PTR)streams[i]->getEndPtr());
+	}
 
 }
 LONG WINAPI StreamManager::handler(PEXCEPTION_POINTERS info) {
 	bool isAccessViolation = info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION;
 	if (isAccessViolation) {
-		VortexS* streamPtr = instance->getStreamFromAddress((ULONG_PTR)(info->ExceptionRecord->ExceptionInformation[1]));
+		VortexS* streamPtr = instance->getStreamFromAddressLinear((ULONG_PTR)(info->ExceptionRecord->ExceptionInformation[1]));
 		if (streamPtr == nullptr) {
 			std::cout << "Stream not found...\n";
 		}
@@ -37,27 +45,34 @@ LONG WINAPI StreamManager::handler(PEXCEPTION_POINTERS info) {
 	}
 	return 0;
 }
-VortexS* StreamManager::getStreamFromAddress(ULONG_PTR faultAddress) {
-	for (uint64_t i = 0; i < numStreams; i++) {
-		//printf("%d %llx %llx \n", i, streams[i]->getStartPtr(), streams[i]->getEndPtr());
-		//std::cout << "Start : " << streams[i]->getStartPtr() << " END : " << streams[i]->getEndPtr() << "\n";
-	}
+VortexS* StreamManager::getStreamFromAddressLinear(ULONG_PTR faultAddress) {
 	for (uint64_t i = 0; i < numStreams; i++) {
 		if (faultAddress >= streams[i]->getStartPtr() && faultAddress < streams[i]->getEndPtr()) {
-			printf("Found in %d", i);
 			return *(streams + i);
-		}	
+		}
 	}//page fualts benchmark random 0 to 256 and fault into and see how long search takes for hash vs linaer benchmark in release mode
 	//do we need  a interval tree
 	// std:: set upper bound implemeneted as a tree 
 	// interval tree -> hashmap to vortex stream
-	printf("%llx \n", faultAddress);
+	//printf("%llx \n", faultAddress);
 	return nullptr;
 }
+VortexS* StreamManager::getStreamFromAddressHash(ULONG_PTR faultAddress) {
+	return startAddressToStream[faultAddress >> sizeStreamPower];
+}
+VortexS* StreamManager::getStreamFromAddressInterval(ULONG_PTR faultAddress) {
+	
+	//printf("interval fault %llx\n", faultAddress);
+	//if (intervalTree.upper_bound(faultAddress) == intervalTree.end()) {
+	//	printf("interval fault %llx\n", faultAddress, *intervalTree.lower_bound(faultAddress));
+	//	
+	//}
+	return endAddressToStream[*intervalTree.upper_bound(faultAddress)];
+}
+
 VortexS* StreamManager::getInputStream() {
 	return this->inputStream;
 }
-
 BOOL StreamManager::EnableLockPrivileges() {
 	//sets enable lock privileges
 	HANDLE hToken;

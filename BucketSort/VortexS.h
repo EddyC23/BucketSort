@@ -11,5 +11,9 @@ public:
 private:
 	void* startPtr;
 	void* endPtr;
+	uint64_t sizeStreamPower;
+	ULONG_PTR lastReadFault;
+	bool isLastReadFaultValid;
 	StreamPool* blockPool;
+	DWORD setGuardPage(ULONG_PTR ptr);
 };

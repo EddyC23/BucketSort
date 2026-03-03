@@ -8,6 +8,7 @@ public:
 	StreamPool(uint64_t inputSizePower, uint64_t blockSizePower, uint64_t additionalBlocks);
 	void mapBlockFromPool(ULONG_PTR ptr);
 	void unmapBlockToPool(ULONG_PTR ptr);
+	uint64_t getSizeBlockPower();
 private:
 	uint64_t inputSizePower;
 	uint64_t additionalBlocks;

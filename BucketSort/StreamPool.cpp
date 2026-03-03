@@ -5,7 +5,7 @@ StreamPool::StreamPool(uint64_t inputSizePower, uint64_t blockSizePower, uint64_
 	this->blockSizePower = blockSizePower;
 	this->additionalBlocks = additionalBlocks;
 
-	uint64_t numBlocks = (inputSizePower >> blockSizePower) + additionalBlocks;
+	uint64_t numBlocks = (1ULL << (inputSizePower - blockSizePower)) + additionalBlocks;
 	uint64_t numPages = numBlocks << blockSizePower >> 12;
 	this->arrayPFN = new ULONG_PTR[numPages];
 
@@ -48,4 +48,7 @@ void StreamPool::unmapBlockToPool(ULONG_PTR ptr) {
 		std::cout << GetLastError();
 		exit(-1);
 	}
+}
+uint64_t StreamPool::getSizeBlockPower() {
+	return blockSizePower;
 }

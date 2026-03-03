@@ -12,7 +12,6 @@ StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint
 		std::cout << GetLastError();
 		exit(-1);
 	}
-
 	StreamPool* blockPool = new StreamPool(sizeStreamPower, sizeBlockPower, additionalBlocks);
 	instance = this;
 	this->sizeStreamPower = sizeStreamPower;
@@ -20,7 +19,6 @@ StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint
 	this->inputStream = new VortexS(sizeStreamPower, blockPool);
 	this->streams = new VortexS * [numStreams];
 	this->testStreams = new ULONG_PTR[numStreams];
-
 	this->streams[0] = inputStream;
 	for (size_t i = 1; i < numStreams; i++) {
 		streams[i] = new VortexS(sizeStreamPower, blockPool);	
@@ -30,7 +28,6 @@ StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint
 		startAddressToStream[(ULONG_PTR)streams[i]->getStartPtr() >> sizeStreamPower] = streams[i];
 		intervalTree.insert(streams[i]->getEndPtr());
 		endAddressToStream[(ULONG_PTR)streams[i]->getEndPtr()] = streams[i];
-		printf("%llx \n", (ULONG_PTR)streams[i]->getEndPtr());
 	}
 
 }
@@ -50,26 +47,9 @@ VortexS* StreamManager::getStreamFromAddressLinear(ULONG_PTR faultAddress) {
 		if (faultAddress >= streams[i]->getStartPtr() && faultAddress < streams[i]->getEndPtr()) {
 			return *(streams + i);
 		}
-	}//page fualts benchmark random 0 to 256 and fault into and see how long search takes for hash vs linaer benchmark in release mode
-	//do we need  a interval tree
-	// std:: set upper bound implemeneted as a tree 
-	// interval tree -> hashmap to vortex stream
-	//printf("%llx \n", faultAddress);
+	}
 	return nullptr;
 }
-VortexS* StreamManager::getStreamFromAddressHash(ULONG_PTR faultAddress) {
-	return startAddressToStream[faultAddress >> sizeStreamPower];
-}
-VortexS* StreamManager::getStreamFromAddressInterval(ULONG_PTR faultAddress) {
-	
-	//printf("interval fault %llx\n", faultAddress);
-	//if (intervalTree.upper_bound(faultAddress) == intervalTree.end()) {
-	//	printf("interval fault %llx\n", faultAddress, *intervalTree.lower_bound(faultAddress));
-	//	
-	//}
-	return endAddressToStream[*intervalTree.upper_bound(faultAddress)];
-}
-
 VortexS* StreamManager::getInputStream() {
 	return this->inputStream;
 }
@@ -114,3 +94,9 @@ BOOL StreamManager::EnableLockPrivileges() {
 	CloseHandle(hToken);
 	return TRUE;
 }
+/*VortexS* StreamManager::getStreamFromAddressHash(ULONG_PTR faultAddress) {
+		return startAddressToStream[faultAddress >> sizeStreamPower];
+	}
+	VortexS* StreamManager::getStreamFromAddressInterval(ULONG_PTR faultAddress) {
+		return endAddressToStream[*intervalTree.upper_bound(faultAddress)];
+	}*/

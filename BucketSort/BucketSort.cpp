@@ -21,7 +21,6 @@ BucketSort::BucketSort(uint64_t* inputBuffer, uint64_t* outputBuffer, uint64_t s
 	
 	for (size_t i = 0; i < depthRecursion + 1; i++) {
 		this->buckets[i] = new uint64_t *[numBuckets];
-		//std::cout << "Index : " <<std::setw(4) << i << " " << this->buckets[i] << "\n";
 	}
 	for (size_t i = 0; i < numBuckets; i++) {
 		this->buckets[0][i] = new uint64_t[size >> 7];
@@ -36,14 +35,13 @@ void BucketSort::sort() {
 
 void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 	uint64_t** p = buckets[level];
-	uint64_t** pNext = buckets[level + 1];
-	//std::cout << p << " " << level;
+	uint64_t** pNext = buckets[level + 1]; // the buckets are not contiguous in virtual memory eg 0 is not immediately followed by 1
 	memcpy(pNext, p, sizeof(uint64_t*) * numBuckets);
 
 	for (uint64_t i = 0; i < size; i++) {
 		uint64_t mask = (1 << 8) - 1;
 		uint64_t idx = (buf[i] >> shift) & mask;
-		*pNext[idx]++ = buf[i];
+		*pNext[idx]++ = buf[i]; // write the numbner to the bucket at the current location, increment ptr
 	}
 	if (flag == level) {
 		return;
@@ -52,19 +50,15 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 	for (uint64_t j = 0; j < numBuckets; j++) {
 		uint64_t sizeNext = pNext[j] - p[j];
 		if (shift == 0) {
-			
 			memcpy(outputBufferNext, p[j], sizeof(uint64_t) * sizeNext);
-			//std::cout << isSorted(outputBufferNext, sizeNext);
 			outputBufferNext += sizeNext;
-		}else if (sizeNext > 32) {
-			sort(p[j], sizeNext, shift - 8, level + 1);
+		}else if (sizeNext <= 32) {
+			std::sort(p[j], pNext[j]);
+			memcpy(outputBufferNext, p[j], sizeof(uint64_t) * sizeNext);
+			outputBufferNext += sizeNext;
 		}
 		else {
-			std::sort(p[j], pNext[j]);
-			//printArray(p[j],sizeNext);
-			memcpy(outputBufferNext, p[j], sizeof(uint64_t) * sizeNext);
-			//std::cout << isSorted(outputBufferNext, sizeNext);
-			outputBufferNext += sizeNext;
+			sort(p[j], sizeNext, shift - 8, level + 1);
 		}
 
 	}

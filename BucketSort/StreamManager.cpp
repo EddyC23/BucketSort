@@ -17,18 +17,25 @@ StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint
 	this->sizeStreamPower = sizeStreamPower;
 	this->numStreams = numStreams;
 	this->inputStream = new VortexS(sizeStreamPower, blockPool);
+	this->outputStream = new VortexS(sizeStreamPower, blockPool);
 	this->streams = new VortexS * [numStreams];
-	this->testStreams = new ULONG_PTR[numStreams];
-	this->streams[0] = inputStream;
-	for (size_t i = 1; i < numStreams; i++) {
+	//this->testStreams = new ULONG_PTR[numStreams];
+	//if (numStreams < 2) {
+	//	std::cout << "not enough streams";
+	//	std::cout << GetLastError();
+	//	exit(-1);
+	//}
+	this->streams[0] = inputStream; // 23 8 gig 
+	this->streams[1] = outputStream;
+	for (size_t i = 2; i < numStreams; i++) {
 		streams[i] = new VortexS(sizeStreamPower, blockPool);	
 	}
-	for (size_t i = 0; i < numStreams; i++) {
-		testStreams[i] = (ULONG_PTR)streams[i]->getStartPtr();
-		startAddressToStream[(ULONG_PTR)streams[i]->getStartPtr() >> sizeStreamPower] = streams[i];
-		intervalTree.insert(streams[i]->getEndPtr());
-		endAddressToStream[(ULONG_PTR)streams[i]->getEndPtr()] = streams[i];
-	}
+	//for (size_t i = 0; i < numStreams; i++) {
+	//	testStreams[i] = (ULONG_PTR)streams[i]->getStartPtr();
+	//	startAddressToStream[(ULONG_PTR)streams[i]->getStartPtr() >> sizeStreamPower] = streams[i];
+	//	intervalTree.insert(streams[i]->getEndPtr());
+	//	endAddressToStream[(ULONG_PTR)streams[i]->getEndPtr()] = streams[i];
+	//}
 
 }
 LONG WINAPI StreamManager::handler(PEXCEPTION_POINTERS info) {
@@ -53,6 +60,10 @@ VortexS* StreamManager::getStreamFromAddressLinear(ULONG_PTR faultAddress) {
 VortexS* StreamManager::getInputStream() {
 	return this->inputStream;
 }
+VortexS* StreamManager::getOutputStream() {
+	return this->outputStream;
+}
+
 BOOL StreamManager::EnableLockPrivileges() {
 	//sets enable lock privileges
 	HANDLE hToken;

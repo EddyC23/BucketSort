@@ -12,6 +12,7 @@ private:
 	void* startPtr;
 	void* endPtr;
 	uint64_t sizeStreamPower;
+	uint64_t sizeBlockPower;
 	ULONG_PTR lastReadFault;
 	bool isLastReadFaultValid;
 	StreamPool* blockPool;

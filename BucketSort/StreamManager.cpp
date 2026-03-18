@@ -42,6 +42,7 @@ LONG WINAPI StreamManager::handler(PEXCEPTION_POINTERS info) {
 	bool isAccessViolation = info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION;
 	if (isAccessViolation) {
 		VortexS* streamPtr = instance->getStreamFromAddressLinear((ULONG_PTR)(info->ExceptionRecord->ExceptionInformation[1]));
+		
 		if (streamPtr == nullptr) {
 			std::cout << "Stream not found...\n";
 		}
@@ -52,6 +53,7 @@ LONG WINAPI StreamManager::handler(PEXCEPTION_POINTERS info) {
 VortexS* StreamManager::getStreamFromAddressLinear(ULONG_PTR faultAddress) {
 	for (uint64_t i = 0; i < numStreams; i++) {
 		if (faultAddress >= streams[i]->getStartPtr() && faultAddress < streams[i]->getEndPtr()) {
+			std::cout << "The stream is : " << i << "\n";
 			return *(streams + i);
 		}
 	}
@@ -63,7 +65,6 @@ VortexS* StreamManager::getInputStream() {
 VortexS* StreamManager::getOutputStream() {
 	return this->outputStream;
 }
-
 BOOL StreamManager::EnableLockPrivileges() {
 	//sets enable lock privileges
 	HANDLE hToken;

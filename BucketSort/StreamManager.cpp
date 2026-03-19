@@ -19,24 +19,18 @@ StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint
 	this->inputStream = new VortexS(sizeStreamPower, blockPool);
 	this->outputStream = new VortexS(sizeStreamPower, blockPool);
 	this->streams = new VortexS * [numStreams];
-	//this->testStreams = new ULONG_PTR[numStreams];
-	//if (numStreams < 2) {
-	//	std::cout << "not enough streams";
-	//	std::cout << GetLastError();
-	//	exit(-1);
-	//}
-	this->streams[0] = inputStream; // 23 8 gig 
-	this->streams[1] = outputStream;
-	for (size_t i = 2; i < numStreams; i++) {
-		streams[i] = new VortexS(sizeStreamPower, blockPool);	
+	
+	if (numStreams < 2) {
+		std::cout << "not enough streams";
+		std::cout << GetLastError();
+		exit(-1);
 	}
-	//for (size_t i = 0; i < numStreams; i++) {
-	//	testStreams[i] = (ULONG_PTR)streams[i]->getStartPtr();
-	//	startAddressToStream[(ULONG_PTR)streams[i]->getStartPtr() >> sizeStreamPower] = streams[i];
-	//	intervalTree.insert(streams[i]->getEndPtr());
-	//	endAddressToStream[(ULONG_PTR)streams[i]->getEndPtr()] = streams[i];
-	//}
-
+	this->streams[0] = inputStream; 
+	this->streams[1] = outputStream;
+	
+	for (size_t i = 2; i < numStreams; i++) {
+		streams[i] = new VortexS(sizeStreamPower, blockPool);
+	}
 }
 LONG WINAPI StreamManager::handler(PEXCEPTION_POINTERS info) {
 	bool isAccessViolation = info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION;

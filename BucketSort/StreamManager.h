@@ -7,11 +7,8 @@ class StreamManager {
 public:
 	StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint64_t sizeBlockPower, uint64_t additionalBlocks);
 	VortexS* getStreamFromAddressLinear(ULONG_PTR faultAddress);
-	//VortexS* getStreamFromAddressHash(ULONG_PTR faultAddress);
-	//VortexS* getStreamFromAddressInterval(ULONG_PTR faultAddress);
 	VortexS* getInputStream();
 	VortexS* getOutputStream();
-	//ULONG_PTR* testStreams;
 private:
 	static StreamManager* instance;
 	BOOL EnableLockPrivileges();
@@ -20,8 +17,6 @@ private:
 	VortexS* outputStream;
 	uint64_t numStreams;
 	uint64_t sizeStreamPower;
-	
-
 	VortexS** streams;
 	std::unordered_map<ULONG_PTR, VortexS*> startAddressToStream;
 	std::unordered_map<ULONG_PTR, VortexS*> endAddressToStream;

@@ -24,8 +24,8 @@ int main() {
 	for (size_t i = 0; i < 1 << 20; i++) {
 		input[i] = distribution(gen);
 	}
-	std::cout << "Input Done.";
-	BucketSort b(input, output, 1 << 20, 100);
+	std::cout << "Input Done.\n";
+	BucketSort b(&sm, input, output, 1 << 20, 100);
 	b.sort();
 	std::cout << b.isSorted();
 	

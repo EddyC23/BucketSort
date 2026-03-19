@@ -9,6 +9,7 @@ public:
 	VortexS* getStreamFromAddressLinear(ULONG_PTR faultAddress);
 	VortexS* getInputStream();
 	VortexS* getOutputStream();
+	VortexS* getNthStream(int n);
 private:
 	static StreamManager* instance;
 	BOOL EnableLockPrivileges();

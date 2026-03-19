@@ -17,4 +17,6 @@ private:
 	bool isLastReadFaultValid;
 	StreamPool* blockPool;
 	DWORD setGuardPage(ULONG_PTR ptr);
+	DWORD removeGuardPage(ULONG_PTR ptr);
+
 };

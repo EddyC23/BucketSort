@@ -1,4 +1,5 @@
 #include "BucketSort.h"
+#include "StreamManager.h"
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
@@ -9,7 +10,7 @@ void BucketSort::printArray(uint64_t* ptr, uint64_t size) {
 	}
 }
 
-BucketSort::BucketSort(uint64_t* inputBuffer, uint64_t* outputBuffer, uint64_t size, int flag) {
+BucketSort::BucketSort(StreamManager* sm,uint64_t* inputBuffer, uint64_t* outputBuffer, uint64_t size, int flag) {
 	this->inputBuffer = inputBuffer;
 	this->outputBuffer = outputBuffer;
 	this->outputBufferNext = outputBuffer;
@@ -23,9 +24,7 @@ BucketSort::BucketSort(uint64_t* inputBuffer, uint64_t* outputBuffer, uint64_t s
 		this->buckets[i] = new uint64_t *[numBuckets];
 	}
 	for (size_t i = 0; i < numBuckets; i++) {
-		this->buckets[0][i] = new uint64_t[size >> 7];
-		// = 1/256(size) (1 - (1/256)^8) / (1 - 1/256) = n/255 // n/128 > n/255 closest 2 power greater than the alloc
-		//std::cout << "Index : " << std::setw(4)<<  i <<" " << this->buckets[i] << "\n";
+		this->buckets[0][i] = (uint64_t*)sm->getNthStream(i)->getStartPtr();
 	}
 }
 void BucketSort::sort() {

@@ -15,19 +15,44 @@ VortexS::VortexS(uint64_t sizeStreamPower, StreamPool* blockPool) {
 		exit(-1);
 	}
 }
+
+//helper
+
+
+void query(ULONG_PTR ptr) {
+	MEMORY_BASIC_INFORMATION memInfo;
+	if (!VirtualQuery((void*)(ptr), &memInfo, 1 << 12)) {
+		std::cout << "virtual query failed";
+		std::cout << GetLastError();
+		exit(-1);
+	}
+	//std::cout << memInfo.
+}
+
 LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
-	bool isGuardViolation = info->ExceptionRecord->ExceptionCode == EXCEPTION_GUARD_PAGE;
 	bool isAccessViolation = info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION;
-	if (!isAccessViolation && !isGuardViolation) {
-		std::cout << "Not a access violation or guard violation...\n";
+	bool isWriteFault = info->ExceptionRecord->ExceptionInformation[0];
+	if (!isAccessViolation) {
+		std::cout << "Not a access violation...\n";
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
-	if (isGuardViolation) {
+	if (isWriteFault) {
+		ULONG_PTR fptr = info->ExceptionRecord->ExceptionInformation[1];
+		blockPool->mapBlockFromPool(fptr);
+		if (fptr >> sizeBlockPower != ((ULONG_PTR)startPtr) >> sizeBlockPower) { // if its not the first block
+			uint64_t blockSizeBytes = 1ULL << sizeBlockPower;
+			setGuardPage(fptr - blockSizeBytes);
+			std::cout << "Made guard page!\n";
+		}
+	}
+	else {
 		ULONG_PTR fptr = info->ExceptionRecord->ExceptionInformation[1];
 		uint64_t blockSizeBytes = 1ULL << blockPool->getSizeBlockPower();
 
 		if (lastReadFault != -1 && fptr == lastReadFault + blockSizeBytes && isLastReadFaultValid) {
 			blockPool->unmapBlockToPool(lastReadFault);
+			removeGuardPage(fptr);
+			std::cout << "Removed guard page!\n";
 		}
 		lastReadFault = fptr;
 		MEMORY_BASIC_INFORMATION memInfo;
@@ -36,27 +61,10 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 			std::cout << GetLastError();
 			exit(-1);
 		}
-		std::cout << "Is Valid XDD" << isLastReadFaultValid;
+	//	std::cout << "Is Valid XDD" << isLastReadFaultValid;
 		isLastReadFaultValid = memInfo.AllocationProtect & PAGE_GUARD;
-	} 
-	else if (isAccessViolation) {
-		bool isWriteFault = info->ExceptionRecord->ExceptionInformation[0];
-		ULONG_PTR fptr = info->ExceptionRecord->ExceptionInformation[1];
-		if (isWriteFault) {
-			blockPool->mapBlockFromPool(fptr);
-			printf("%llx %llx %d %llx", fptr >> sizeBlockPower, ((ULONG_PTR)startPtr) >> sizeBlockPower, (fptr >> sizeBlockPower) - (((ULONG_PTR)startPtr) >> sizeBlockPower), fptr);
-			if (fptr >> sizeBlockPower != ((ULONG_PTR)startPtr) >> sizeBlockPower) { // if its not the first block
-				uint64_t blockSizeBytes = 1ULL << sizeBlockPower;
-				setGuardPage(fptr - blockSizeBytes);
-				std::cout << "Made guard page!\n";
-			}
-		}
-		else {
-			std::cout << "only guard page violation should be triggered for read faults";
-			std::cout << GetLastError();
-			exit(-1);
-		}
 	}
+
 	return EXCEPTION_CONTINUE_EXECUTION;
 }
 ULONG_PTR VortexS::getStartPtr() {
@@ -80,6 +88,18 @@ DWORD VortexS::setGuardPage(ULONG_PTR ptr) {
 		exit(-1);
 	}
 	
-	printf("Alloc protect %lx", memInfo.AllocationProtect);
+	
+	//std::cout << GetLastError();
+	//printf("Old protect %lx \nAlloc protect %lx \n",oldProtect, memInfo.Protect);
 	return oldProtect;
+}
+DWORD VortexS::removeGuardPage(ULONG_PTR ptr) {
+	DWORD oldProtect = 0;
+	if (!VirtualProtect((void*)ptr, 1 << 12, PAGE_READWRITE, &oldProtect)) {
+		std::cout << "virtual protect failed";
+		std::cout << GetLastError();
+		exit(-1);
+	}
+	return oldProtect;
+
 }

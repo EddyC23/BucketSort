@@ -47,7 +47,7 @@ LONG WINAPI StreamManager::handler(PEXCEPTION_POINTERS info) {
 VortexS* StreamManager::getStreamFromAddressLinear(ULONG_PTR faultAddress) {
 	for (uint64_t i = 0; i < numStreams; i++) {
 		if (faultAddress >= streams[i]->getStartPtr() && faultAddress < streams[i]->getEndPtr()) {
-			std::cout << "The stream is : " << i << "\n";
+			//std::cout << "The fault stream is : " << i << "\n";
 			return *(streams + i);
 		}
 	}
@@ -58,6 +58,9 @@ VortexS* StreamManager::getInputStream() {
 }
 VortexS* StreamManager::getOutputStream() {
 	return this->outputStream;
+}
+VortexS* StreamManager::getNthStream(int n) {
+	return streams[n + 2];
 }
 BOOL StreamManager::EnableLockPrivileges() {
 	//sets enable lock privileges
@@ -100,9 +103,3 @@ BOOL StreamManager::EnableLockPrivileges() {
 	CloseHandle(hToken);
 	return TRUE;
 }
-/*VortexS* StreamManager::getStreamFromAddressHash(ULONG_PTR faultAddress) {
-		return startAddressToStream[faultAddress >> sizeStreamPower];
-	}
-	VortexS* StreamManager::getStreamFromAddressInterval(ULONG_PTR faultAddress) {
-		return endAddressToStream[*intervalTree.upper_bound(faultAddress)];
-	}*/

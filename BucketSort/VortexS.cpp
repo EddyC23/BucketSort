@@ -2,6 +2,8 @@
 #include <cstdio>
 #include <iostream>
 int count = 0;
+int mapCount = 0;
+int unmapCount = 0;
 VortexS::VortexS(uint64_t sizeStreamPower, StreamPool* blockPool) {
 	this->startPtr = VirtualAlloc(NULL, 1ULL << sizeStreamPower, MEM_RESERVE | MEM_PHYSICAL, PAGE_READWRITE);
 	this->endPtr = (void*)((char*)this->startPtr + (1ULL << sizeStreamPower));
@@ -43,8 +45,8 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 		if (fptr >> sizeBlockPower != ((ULONG_PTR)startPtr) >> sizeBlockPower) { // if its not the first block
 			uint64_t blockSizeBytes = 1ULL << sizeBlockPower;
 			setGuardPage(fptr - blockSizeBytes);
-			std::cout << "Made guard page!\n";
-			std::cout << ++count;
+			std::cout << "Made guard page!";
+			std::cout << ++count << "\n";
 		}
 	}
 	else {
@@ -52,14 +54,14 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 		uint64_t blockSizeBytes = 1ULL << blockPool->getSizeBlockPower();
 		if (lastReadFault == -1) {
 			removeGuardPage(fptr);
-			std::cout << "Removed guard page!\n";
-			std::cout << --count;
+			std::cout << "Removed guard page!";
+			std::cout << --count << "\n";
 		}
-		if (lastReadFault != -1 && fptr == lastReadFault + blockSizeBytes && isLastReadFaultValid) {//first block or the criteria
+		else if (fptr == lastReadFault + blockSizeBytes && isLastReadFaultValid) {
 			blockPool->unmapBlockToPool(lastReadFault);
 			removeGuardPage(fptr);
-			std::cout << "Removed guard page!\n";
-			std::cout << --count;
+			std::cout << "Removed guard page!";
+			std::cout << --count << "\n";
 		}
 		lastReadFault = fptr;
 		MEMORY_BASIC_INFORMATION memInfo;

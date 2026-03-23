@@ -32,16 +32,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BucketSort.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="StreamManager.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VortexS.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="BucketSort.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StreamPool.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StreamManager.h">
+    <ClInclude Include="VortexS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

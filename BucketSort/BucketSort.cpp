@@ -33,6 +33,18 @@ void BucketSort::sort() {
 }
 
 void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
+	//read thru
+	/*
+	uint64_t sum = 0;
+	for (uint64_t i = 0; i < size; i++) {
+		
+		sum += buf[i]; // write the numbner to the bucket at the current location, increment ptr
+		
+		
+	}
+	std::cout << sum;		
+	return;
+	*/
 	uint64_t** p = buckets[level];
 	uint64_t** pNext = buckets[level + 1]; // the buckets are not contiguous in virtual memory eg 0 is not immediately followed by 1
 	memcpy(pNext, p, sizeof(uint64_t*) * numBuckets);

@@ -1,6 +1,7 @@
 #include "VortexS.h"
 #include <cstdio>
 #include <iostream>
+int count = 0;
 VortexS::VortexS(uint64_t sizeStreamPower, StreamPool* blockPool) {
 	this->startPtr = VirtualAlloc(NULL, 1ULL << sizeStreamPower, MEM_RESERVE | MEM_PHYSICAL, PAGE_READWRITE);
 	this->endPtr = (void*)((char*)this->startPtr + (1ULL << sizeStreamPower));
@@ -43,16 +44,22 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 			uint64_t blockSizeBytes = 1ULL << sizeBlockPower;
 			setGuardPage(fptr - blockSizeBytes);
 			std::cout << "Made guard page!\n";
+			std::cout << ++count;
 		}
 	}
 	else {
 		ULONG_PTR fptr = info->ExceptionRecord->ExceptionInformation[1];
 		uint64_t blockSizeBytes = 1ULL << blockPool->getSizeBlockPower();
-
-		if (lastReadFault != -1 && fptr == lastReadFault + blockSizeBytes && isLastReadFaultValid) {
+		if (lastReadFault == -1) {
+			removeGuardPage(fptr);
+			std::cout << "Removed guard page!\n";
+			std::cout << --count;
+		}
+		if (lastReadFault != -1 && fptr == lastReadFault + blockSizeBytes && isLastReadFaultValid) {//first block or the criteria
 			blockPool->unmapBlockToPool(lastReadFault);
 			removeGuardPage(fptr);
 			std::cout << "Removed guard page!\n";
+			std::cout << --count;
 		}
 		lastReadFault = fptr;
 		MEMORY_BASIC_INFORMATION memInfo;
@@ -61,8 +68,7 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 			std::cout << GetLastError();
 			exit(-1);
 		}
-	//	std::cout << "Is Valid XDD" << isLastReadFaultValid;
-		isLastReadFaultValid = memInfo.AllocationProtect & PAGE_GUARD;
+		isLastReadFaultValid = memInfo.Protect == PAGE_NOACCESS;
 	}
 
 	return EXCEPTION_CONTINUE_EXECUTION;
@@ -100,6 +106,16 @@ DWORD VortexS::removeGuardPage(ULONG_PTR ptr) {
 		std::cout << GetLastError();
 		exit(-1);
 	}
+	MEMORY_BASIC_INFORMATION memInfo;
+	if (!VirtualQuery((void*)(ptr), &memInfo, 1 << 12)) {
+		std::cout << "virtual query failed";
+		std::cout << GetLastError();
+		exit(-1);
+	}
+
+
+	//std::cout << GetLastError();
+	printf("Old protect %lx \nAlloc protect %lx \n",oldProtect, memInfo.Protect);
 	return oldProtect;
 
 }

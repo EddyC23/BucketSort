@@ -6,7 +6,7 @@ StreamPool::StreamPool(uint64_t inputSizePower, uint64_t blockSizePower, uint64_
 	this->additionalBlocks = additionalBlocks;
 
 	uint64_t numBlocks = (1ULL << (inputSizePower - blockSizePower)) * 255 + additionalBlocks;
-	uint64_t numPages = numBlocks << blockSizePower >> 12;
+	uint64_t numPages = numBlocks << (blockSizePower - 12);
 	this->arrayPFN = new ULONG_PTR[numPages];
 
 	if (blockSizePower < 12) {

@@ -10,6 +10,10 @@ public:
 	VortexS* getInputStream();
 	VortexS* getOutputStream();
 	VortexS* getNthStream(int n);
+	static int count;
+	static int mapCount;
+	static int unmapCount;
+	void printDebug();
 private:
 	static StreamManager* instance;
 	BOOL EnableLockPrivileges();

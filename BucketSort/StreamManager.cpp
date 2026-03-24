@@ -3,7 +3,9 @@
 
 
 StreamManager* StreamManager::instance = nullptr;
-
+int StreamManager::count = 0;
+int StreamManager::mapCount = 0;
+int StreamManager::unmapCount = 0;
 StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint64_t sizeBlockPower, uint64_t additionalBlocks) {
 	
 	EnableLockPrivileges();
@@ -62,6 +64,12 @@ VortexS* StreamManager::getOutputStream() {
 VortexS* StreamManager::getNthStream(int n) {
 	return streams[n + 2];
 }
+void StreamManager::printDebug() {
+	std::cout << "Total Map Count : " << mapCount << "\n";
+	std::cout << "Total Unmap Count : " << unmapCount << "\n";
+	std::cout << "Total Guard Pages : " << count << "\n";
+}
+
 BOOL StreamManager::EnableLockPrivileges() {
 	//sets enable lock privileges
 	HANDLE hToken;

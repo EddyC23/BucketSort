@@ -25,9 +25,10 @@ int main() {
 		input[i] = distribution(gen);
 	}
 	std::cout << "Input Done.\n";
-	BucketSort b(&sm, input, output, 1 << 20, 3);
+
+	BucketSort b(&sm, input, output, 1 << 20, 1000);
 	b.sort();
-	//std::cout << b.isSorted();
+	std::cout << b.isSorted();
 	
 	//	//static preallocated buckets n/256 only for L0 for both
 	//write onyl commit only stream (stream)

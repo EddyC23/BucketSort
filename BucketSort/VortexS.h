@@ -8,6 +8,7 @@ public:
 	LONG handle_exception(PEXCEPTION_POINTERS info);
 	ULONG_PTR getStartPtr();
 	ULONG_PTR getEndPtr();
+
 private:
 	void* startPtr;
 	void* endPtr;
@@ -18,5 +19,4 @@ private:
 	StreamPool* blockPool;
 	DWORD setGuardPage(ULONG_PTR ptr);
 	DWORD removeGuardPage(ULONG_PTR ptr);
-
 };

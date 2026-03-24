@@ -5,7 +5,7 @@ StreamPool::StreamPool(uint64_t inputSizePower, uint64_t blockSizePower, uint64_
 	this->blockSizePower = blockSizePower;
 	this->additionalBlocks = additionalBlocks;
 
-	uint64_t numBlocks = (1ULL << (inputSizePower - blockSizePower)) + additionalBlocks;
+	uint64_t numBlocks = (1ULL << (inputSizePower - blockSizePower)) * 255 + additionalBlocks;
 	uint64_t numPages = numBlocks << blockSizePower >> 12;
 	this->arrayPFN = new ULONG_PTR[numPages];
 
@@ -30,10 +30,15 @@ StreamPool::StreamPool(uint64_t inputSizePower, uint64_t blockSizePower, uint64_
 }
 void StreamPool::mapBlockFromPool(ULONG_PTR ptr) {
 	void* vptr = (void*)ptr;
+	//if (blockPool.size() == 0) {
+	//	std::cout << "map block failed blockPool empty";
+	//	std::cout << GetLastError();
+	//	exit(-1);
+	//}
 	if (blockPool.size() == 0) {
-		std::cout << "map block failed blockPool empty";
-		std::cout << GetLastError();
-		exit(-1);
+			std::cout << "blockPool empty, adding additional memory";
+			
+			
 	}
 	PULONG_PTR pageArray = blockPool.top();
 	uint64_t blockSizePages = 1ULL << (blockSizePower - 12);

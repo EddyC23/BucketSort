@@ -1,9 +1,8 @@
 #include "VortexS.h"
+#include "StreamManager.h"
 #include <cstdio>
 #include <iostream>
-int count = 0;
-int mapCount = 0;
-int unmapCount = 0;
+
 VortexS::VortexS(uint64_t sizeStreamPower, StreamPool* blockPool) {
 	this->startPtr = VirtualAlloc(NULL, 1ULL << sizeStreamPower, MEM_RESERVE | MEM_PHYSICAL, PAGE_READWRITE);
 	this->endPtr = (void*)((char*)this->startPtr + (1ULL << sizeStreamPower));
@@ -42,11 +41,13 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 	if (isWriteFault) {
 		ULONG_PTR fptr = info->ExceptionRecord->ExceptionInformation[1];
 		blockPool->mapBlockFromPool(fptr);
+		StreamManager::mapCount++;
 		if (fptr >> sizeBlockPower != ((ULONG_PTR)startPtr) >> sizeBlockPower) { // if its not the first block
 			uint64_t blockSizeBytes = 1ULL << sizeBlockPower;
 			setGuardPage(fptr - blockSizeBytes);
-			std::cout << "Made guard page!";
-			std::cout << ++count << "\n";
+			//std::cout << "Made guard page!";
+			//std::cout << ++count << "\n";
+			StreamManager::count++;
 		}
 	}
 	else {
@@ -54,14 +55,21 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 		uint64_t blockSizeBytes = 1ULL << blockPool->getSizeBlockPower();
 		if (lastReadFault == -1) {
 			removeGuardPage(fptr);
-			std::cout << "Removed guard page!";
-			std::cout << --count << "\n";
+			//std::cout << "Removed guard page!";
+			//std::cout << --count << "\n";
+			StreamManager::count--;
 		}
 		else if (fptr == lastReadFault + blockSizeBytes && isLastReadFaultValid) {
 			blockPool->unmapBlockToPool(lastReadFault);
+			StreamManager::unmapCount++;
 			removeGuardPage(fptr);
-			std::cout << "Removed guard page!";
-			std::cout << --count << "\n";
+			//std::cout << "Removed guard page!";
+			//std::cout << --count << "\n";
+			StreamManager::count--;
+		}
+		else {
+			removeGuardPage(fptr);
+			StreamManager::count--;
 		}
 		lastReadFault = fptr;
 		MEMORY_BASIC_INFORMATION memInfo;
@@ -83,18 +91,18 @@ ULONG_PTR VortexS::getEndPtr() {
 }
 DWORD VortexS::setGuardPage(ULONG_PTR ptr) {
 	DWORD oldProtect = 0;
-	if (!VirtualProtect((void*)ptr, 1 << 12, PAGE_NOACCESS, &oldProtect)) {
+	if (!VirtualProtect((void*)ptr, 1, PAGE_NOACCESS, &oldProtect)) {
 		std::cout << "virtual protect failed";
 		std::cout << GetLastError();
 		exit(-1);
 	}
 
-	MEMORY_BASIC_INFORMATION memInfo;
-	if (!VirtualQuery((void*)(ptr ), &memInfo, 1 << 12)) {
-		std::cout << "virtual query failed";
-		std::cout << GetLastError();
-		exit(-1);
-	}
+	//MEMORY_BASIC_INFORMATION memInfo;
+	//if (!VirtualQuery((void*)(ptr ), &memInfo, 1 << 12)) {
+	//	std::cout << "virtual query failed";
+	//	std::cout << GetLastError();
+	//	exit(-1);
+	//}
 	
 	
 	//std::cout << GetLastError();
@@ -103,21 +111,21 @@ DWORD VortexS::setGuardPage(ULONG_PTR ptr) {
 }
 DWORD VortexS::removeGuardPage(ULONG_PTR ptr) {
 	DWORD oldProtect = 0;
-	if (!VirtualProtect((void*)ptr, 1 << 12, PAGE_READWRITE, &oldProtect)) {
+	if (!VirtualProtect((void*)ptr, 1, PAGE_READWRITE, &oldProtect)) {
 		std::cout << "virtual protect failed";
 		std::cout << GetLastError();
 		exit(-1);
 	}
-	MEMORY_BASIC_INFORMATION memInfo;
-	if (!VirtualQuery((void*)(ptr), &memInfo, 1 << 12)) {
-		std::cout << "virtual query failed";
-		std::cout << GetLastError();
-		exit(-1);
-	}
+	//MEMORY_BASIC_INFORMATION memInfo;
+	//if (!VirtualQuery((void*)(ptr), &memInfo, 1 << 12)) {
+	//	std::cout << "virtual query failed";
+	//	std::cout << GetLastError();
+	//	exit(-1);
+	//}
 
 
-	//std::cout << GetLastError();
-	printf("Old protect %lx \nAlloc protect %lx \n",oldProtect, memInfo.Protect);
+	////std::cout << GetLastError();
+	//printf("Old protect %lx \nAlloc protect %lx \n",oldProtect, memInfo.Protect);
 	return oldProtect;
 
 }

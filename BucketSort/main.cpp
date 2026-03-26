@@ -16,7 +16,7 @@ int main() {
 
 	uint64_t numStreams = 1 + 1 + (1 << 8); // 1 input stream, 1 output stream, 2 ^ 8 buckets
 	uint64_t sizeStreamPower = 3 + 25; // 64-bit integer 2 ^ 3 = 8 bytes, 2 ^ 20 integers
-	uint64_t sizeBlockPower = 13; // 2 ^ 12 bytes, 8 kb blocks
+	uint64_t sizeBlockPower = 13; // 2 ^ 13 bytes, 8 kb blocks
 	uint64_t additionalBlocks = 1 << 8; // 2 ^ 8 buckets
 	StreamManager sm(numStreams, sizeStreamPower, sizeBlockPower, additionalBlocks);
 	uint64_t* input = (uint64_t*)sm.getInputStream()->getStartPtr();

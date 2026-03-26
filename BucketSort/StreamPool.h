@@ -15,5 +15,6 @@ private:
 	std::stack<PULONG_PTR> blockPool;
 	std::unordered_map <void*, PULONG_PTR> ptrToPFN;
 	PULONG_PTR arrayPFN;
-	uint64_t blockSizePower;
+	uint64_t blockSizePower; 
+	uint64_t numBlocks;
 };

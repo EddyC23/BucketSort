@@ -99,12 +99,12 @@ DWORD VortexS::removeGuardPage(ULONG_PTR ptr) {
 		exit(-1);
 	}
 	//needed for both release mode and debug on laptop?
-	MEMORY_BASIC_INFORMATION memInfo;
-	if (!VirtualQuery((void*)(ptr), &memInfo, 1 << 12)) {
-		std::cout << "virtual query failed";
-		std::cout << GetLastError();
-		exit(-1);
-	}
+	//MEMORY_BASIC_INFORMATION memInfo;
+	//if (!VirtualQuery((void*)(ptr), &memInfo, 1 << 12)) {
+	//	std::cout << "virtual query failed";
+	//	std::cout << GetLastError();
+	//	exit(-1);
+	//}//
 	return oldProtect;
 
 }

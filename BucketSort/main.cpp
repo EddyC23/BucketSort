@@ -15,7 +15,7 @@ int main() {
 	std::uniform_int_distribution<uint64_t> distribution(0);
 
 	uint64_t numStreams = 1 + 1 + (1 << 8); // 1 input stream, 1 output stream, 2 ^ 8 buckets
-	uint64_t sizeStreamPower = 3 + 25; // 64-bit integer 2 ^ 3 = 8 bytes, 2 ^ 20 integers
+	uint64_t sizeStreamPower = 3 + 27; // 64-bit integer 2 ^ 3 = 8 bytes, 2 ^ 20 integers
 	uint64_t sizeBlockPower = 13; // 2 ^ 13 bytes, 8 kb blocks
 	uint64_t additionalBlocks = 1 << 8; // 2 ^ 8 buckets
 	StreamManager sm(numStreams, sizeStreamPower, sizeBlockPower, additionalBlocks);
@@ -28,8 +28,13 @@ int main() {
 
 	BucketSort b(&sm, input, output, 1ULL << (sizeStreamPower - 3), 1000);
 	b.sort();
+	std::cout << "Sorting Done\n";
 	std::cout << b.isSorted();
 	
 	//	//static preallocated buckets n/256 only for L0 for both
 	//write onyl commit only stream (stream)
 }
+//correctness for data generator
+// gb sort
+//fix mmeory overhead 1 + 1/255 + 2k ish 256 * levels worst case // take back blocks two st
+//if exhaust request mroe blocks

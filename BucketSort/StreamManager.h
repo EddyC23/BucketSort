@@ -23,7 +23,9 @@ private:
 	VortexS* outputStream;
 	uint64_t numStreams;
 	uint64_t sizeStreamPower;
+	uint64_t sizeBlockPower;
 	VortexS** streams;
+	StreamPool* blockPool;
 	std::unordered_map<ULONG_PTR, VortexS*> startAddressToStream;
 	std::unordered_map<ULONG_PTR, VortexS*> endAddressToStream;
 	std::set<ULONG_PTR> intervalTree;

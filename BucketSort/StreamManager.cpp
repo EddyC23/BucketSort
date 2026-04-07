@@ -15,9 +15,10 @@ StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint
 		std::cout << GetLastError();
 		exit(-1);
 	}
-	StreamPool* blockPool = new StreamPool(sizeStreamPower, sizeBlockPower, additionalBlocks);
+	this-> blockPool = new StreamPool(sizeStreamPower, sizeBlockPower, additionalBlocks);
 	instance = this;
 	this->sizeStreamPower = sizeStreamPower;
+	this->sizeBlockPower = sizeBlockPower;
 	this->numStreams = numStreams;
 	this->inputStream = new VortexS(sizeStreamPower, blockPool);
 	this->outputStream = new VortexS(sizeStreamPower, blockPool);
@@ -66,10 +67,13 @@ VortexS* StreamManager::getNthStream(int n) {
 	return streams[n + 2];
 }
 void StreamManager::printDebug() {
+	std::cout << "Size Stream in Blocks : " << (1ULL << (sizeStreamPower - sizeBlockPower)) << "\n";
 	std::cout << "Blocks Needed : " << blocksNeededCount << "\n";
 	std::cout << "Total Block Map Count : " << mapCount << "\n";
 	std::cout << "Total Block Unmap Count : " << unmapCount << "\n";
 	std::cout << "Total Guard Pages : " << guardCount << "\n";
+	std::cout << "Blocks Needed / Blocks Allocated : " << (blocksNeededCount + 0.0)/blockPool->getNumBlocks() << "\n";
+
 }
 
 BOOL StreamManager::EnableLockPrivileges() {

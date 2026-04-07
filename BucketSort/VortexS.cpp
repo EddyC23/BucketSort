@@ -18,9 +18,6 @@ VortexS::VortexS(uint64_t sizeStreamPower, StreamPool* blockPool) {
 	}
 }
 
-//helper
-
-
 void query(ULONG_PTR ptr) {
 	MEMORY_BASIC_INFORMATION memInfo;
 	if (!VirtualQuery((void*)(ptr), &memInfo, 1 << 12)) {

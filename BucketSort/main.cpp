@@ -21,8 +21,8 @@ int main() {
 
 		uint64_t numStreams = 1 + 1 + (1 << 8); // 1 input stream, 1 output stream, 256 bucket streams
 		uint64_t sizeStreamPower = 3 + 27; // 1 gb input
-		uint64_t sizeBlockPower = 20; // 1 mb blocks
-		uint64_t additionalBlocks = 0;// 256 * 4 + (1 << 8); // 2048 + 256buckets // two blocks lost per level?
+		uint64_t sizeBlockPower = 20;// 1 mb blocks
+		uint64_t additionalBlocks =  256 * 4 + (1 << 8); // 2048 + 256buckets // two blocks lost per level?
 
 		StreamManager sm(numStreams, sizeStreamPower, sizeBlockPower, additionalBlocks);
 		uint64_t* input = (uint64_t*)sm.getInputStream()->getStartPtr();
@@ -35,7 +35,7 @@ int main() {
 		BucketSort b(&sm, input, output, 1ULL << (sizeStreamPower - 3), 1000);
 		b.sort();
 		std::cout << "Sorting Done\n";
-		std::cout << b.isSorted();
+		b.isSorted();
 	}
 	else{
 		std::random_device rd;
@@ -59,7 +59,7 @@ int main() {
 		BucketSort b(&sm, input, output, 1ULL << (sizeStreamPower - 3), 1000);
 		b.sort();
 		std::cout << "Sorting Done\n";
-		std::cout << b.isSorted();
+		b.isSorted();
 	}
 }
 //correctness for data generator

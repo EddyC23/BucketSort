@@ -53,9 +53,9 @@ void StreamPool::mapBlockFromPool(ULONG_PTR ptr) {
 	}
 }
 void StreamPool::unmapBlockToPool(ULONG_PTR ptr) {
-	StreamManager::blocksNeededCount = max(numBlocks - blockPool.size(), StreamManager::blocksNeededCount);
 	void* vptr = (void*)ptr;
 	uint64_t blockSizePages = 1ULL << (blockSizePower - 12);
+	StreamManager::blocksNeededCount = max((indexArrayPFN / blockSizePages) - blockPool.size(), StreamManager::blocksNeededCount);
 	blockPool.push(ptrToPFN[vptr]);
 	if (!MapUserPhysicalPages(vptr, blockSizePages, NULL)) {
 		std::cout << "unmap block failed";
@@ -81,5 +81,7 @@ uint64_t StreamPool::getSizeBlockPower() {
 	return blockSizePower;
 }
 uint64_t StreamPool::getNumBlocks() {
-	return numBlocks;
+	//num blocks alloc
+	uint64_t blockSizePages = 1ULL << (blockSizePower - 12);
+	return numBlocks + (indexArrayPFN) / blockSizePages;
 }

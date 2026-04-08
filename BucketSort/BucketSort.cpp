@@ -69,10 +69,12 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 bool BucketSort::isSorted() {
 	for (uint64_t i = 1; i < size; i++) {
 		if (outputBuffer[i] < outputBuffer[i - 1]) {
+			std::cout << "Not sorted";
 			return false;
 		}
 	}
 	sm->printDebug();
+	std::cout << "Sorted";
 	return true;
 }
 

@@ -4,8 +4,8 @@
 #include <iostream>
 
 VortexS::VortexS(uint64_t sizeStreamPower, StreamPool* blockPool) {
-	this->startPtr = VirtualAlloc(NULL, 1ULL << sizeStreamPower, MEM_RESERVE | MEM_PHYSICAL, PAGE_READWRITE);
-	this->endPtr = (void*)((char*)this->startPtr + (1ULL << sizeStreamPower));
+	this->startPtr = VirtualAlloc(NULL, 256ULL * (1ULL << sizeStreamPower), MEM_RESERVE | MEM_PHYSICAL, PAGE_READWRITE);
+	this->endPtr = (void*)((char*)this->startPtr + 256ULL * (1ULL << sizeStreamPower));
 	this->sizeStreamPower = sizeStreamPower;
 	this->sizeBlockPower = blockPool->getSizeBlockPower();
 	this->blockPool = blockPool;
@@ -37,11 +37,9 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 	if (isWriteFault) {
 		ULONG_PTR fptr = info->ExceptionRecord->ExceptionInformation[1];
 		blockPool->mapBlockFromPool(fptr);
-		StreamManager::mapCount++;
 		if (fptr >> sizeBlockPower != ((ULONG_PTR)startPtr) >> sizeBlockPower) { // if its not the first block
 			uint64_t blockSizeBytes = 1ULL << sizeBlockPower;
 			setGuardPage(fptr - blockSizeBytes);
-			StreamManager::guardCount++;
 		}
 	}
 	else {
@@ -49,17 +47,13 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 		uint64_t blockSizeBytes = 1ULL << blockPool->getSizeBlockPower();
 		if (lastReadFault == -1) {
 			removeGuardPage(fptr);
-			StreamManager::guardCount--;
 		}
 		else if (fptr == lastReadFault + blockSizeBytes && isLastReadFaultValid) {
 			blockPool->unmapBlockToPool(lastReadFault);
-			StreamManager::unmapCount++;
 			removeGuardPage(fptr);
-			StreamManager::guardCount--;
 		}
 		else {
 			removeGuardPage(fptr);
-			StreamManager::guardCount--;
 		}
 		lastReadFault = fptr;
 		MEMORY_BASIC_INFORMATION memInfo;
@@ -86,6 +80,7 @@ DWORD VortexS::setGuardPage(ULONG_PTR ptr) {
 		std::cout << GetLastError();
 		exit(-1);
 	}
+	StreamManager::guardCount++;
 	return oldProtect;
 }
 DWORD VortexS::removeGuardPage(ULONG_PTR ptr) {
@@ -95,13 +90,13 @@ DWORD VortexS::removeGuardPage(ULONG_PTR ptr) {
 		std::cout << GetLastError();
 		exit(-1);
 	}
-	//needed for both release mode and debug on laptop? non deterministic
+	StreamManager::guardCount--;
+	return oldProtect;
+	/*needed for both release mode and debug on laptop ? non deterministic
 	//MEMORY_BASIC_INFORMATION memInfo;
 	//if (!VirtualQuery((void*)(ptr), &memInfo, 1 << 12)) {
 	//	std::cout << "virtual query failed";
 	//	std::cout << GetLastError();
 	//	exit(-1);
-	//}//
-	return oldProtect;
-
+	//}*/
 }

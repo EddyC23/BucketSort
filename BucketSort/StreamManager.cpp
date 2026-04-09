@@ -3,10 +3,14 @@
 
 
 StreamManager* StreamManager::instance = nullptr;
-int StreamManager::blocksNeededCount = 0;
+
 int StreamManager::guardCount = 0;
 int StreamManager::mapCount = 0;
 int StreamManager::unmapCount = 0;
+int StreamManager::blocksNeededCount = 0;
+int StreamManager::preallocBlocks = 0;
+int StreamManager::requestedBlocks = 0;
+
 StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint64_t sizeBlockPower, uint64_t additionalBlocks) {
 	
 	EnableLockPrivileges();
@@ -15,15 +19,21 @@ StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint
 		std::cout << GetLastError();
 		exit(-1);
 	}
-	this-> blockPool = new StreamPool(sizeStreamPower, sizeBlockPower, additionalBlocks);
+
 	instance = this;
 	this->sizeStreamPower = sizeStreamPower;
 	this->sizeBlockPower = sizeBlockPower;
 	this->numStreams = numStreams;
+	
+	StreamManager::preallocBlocks = (1ULL << (sizeStreamPower - sizeBlockPower)) * 256.0 / 255.0 + additionalBlocks;
+	this->blockPool = new StreamPool(StreamManager::preallocBlocks, sizeBlockPower);
+	
 	this->inputStream = new VortexS(sizeStreamPower, blockPool);
 	this->outputStream = new VortexS(sizeStreamPower, blockPool);
 	this->streams = new VortexS * [numStreams];
+
 	
+
 	if (numStreams < 2) {
 		std::cout << "not enough streams";
 		std::cout << GetLastError();
@@ -51,7 +61,6 @@ LONG WINAPI StreamManager::handler(PEXCEPTION_POINTERS info) {
 VortexS* StreamManager::getStreamFromAddressLinear(ULONG_PTR faultAddress) {
 	for (uint64_t i = 0; i < numStreams; i++) {
 		if (faultAddress >= streams[i]->getStartPtr() && faultAddress < streams[i]->getEndPtr()) {
-			//std::cout << "The fault stream is : " << i << "\n";
 			return *(streams + i);
 		}
 	}
@@ -68,12 +77,12 @@ VortexS* StreamManager::getNthStream(int n) {
 }
 void StreamManager::printDebug() {
 	std::cout << "Size Stream in Blocks : " << (1ULL << (sizeStreamPower - sizeBlockPower)) << "\n";
-	std::cout << "Blocks Needed : " << blocksNeededCount << "\n";
 	std::cout << "Total Block Map Count : " << mapCount << "\n";
 	std::cout << "Total Block Unmap Count : " << unmapCount << "\n";
-	std::cout << "Total Guard Pages : " << guardCount << "\n";
-	std::cout << "Blocks Needed / Blocks Allocated : " << (blocksNeededCount + 0.0)/blockPool->getNumBlocks() << "\n";
-
+	std::cout << "Blocks Left Behind : " << mapCount - unmapCount << "\n";
+	std::cout << "Total Blocks Needed For Sort: " << blocksNeededCount << "\n";
+	std::cout << "Blocks Needed / Blocks Allocated : " << (blocksNeededCount + 0.0)/(preallocBlocks + requestedBlocks) << "\n";
+	std::cout << "Guard Pages Left After Sort: " << guardCount << "\n";
 }
 
 BOOL StreamManager::EnableLockPrivileges() {

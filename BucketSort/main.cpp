@@ -14,13 +14,13 @@
 
 int main() {
 	
-	if (true) {
+	if (false) {
 		std::random_device rd;
 		std::mt19937 gen(rd());
 		std::uniform_int_distribution<uint64_t> distribution(0);
 
 		uint64_t numStreams = 1 + 1 + (1 << 8); // 1 input stream, 1 output stream, 256 bucket streams
-		uint64_t sizeStreamPower = 3 + 27; // 1 gb input
+		uint64_t sizeStreamPower = 3 + 24; // 1 gb input
 		uint64_t sizeBlockPower = 20;// 1 mb blocks
 		uint64_t additionalBlocks =  256 * 4 + (1 << 8); // 2048 + 256buckets // two blocks lost per level?
 
@@ -40,10 +40,10 @@ int main() {
 	else{
 		std::random_device rd;
 		std::mt19937 gen(rd());
-		std::normal_distribution<double> distribution(0.0, 1.0 * UINT64_MAX);
+		std::binomial_distribution<uint64_t> distribution(UINT64_MAX, 0.5);
 
 		uint64_t numStreams = 1 + 1 + (1 << 8); // 1 input stream, 1 output stream, 256 bucket streams
-		uint64_t sizeStreamPower = 3 + 27; // 1 gb input
+		uint64_t sizeStreamPower = 3 + 24; // 1 gb input
 		uint64_t sizeBlockPower = 20; // 1 mb blocks
 		uint64_t additionalBlocks = 256 * 4 + (1 << 8); // 2048 + 256buckets // two blocks lost per level?
 
@@ -52,7 +52,6 @@ int main() {
 		uint64_t* output = (uint64_t*)sm.getOutputStream()->getStartPtr();
 		for (size_t i = 0; i < 1ULL << (sizeStreamPower - 3); i++) {
 			input[i] = distribution(gen);
-			//std::cout << input[i] << "\n";
 		}
 		std::cout << "Input Done.\nSize Stream in Blocks : " << (1ULL << (sizeStreamPower - sizeBlockPower)) << "\n";
 

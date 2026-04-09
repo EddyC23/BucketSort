@@ -14,6 +14,8 @@ public:
 	static int mapCount;
 	static int unmapCount;
 	static int blocksNeededCount;
+	static int preallocBlocks;
+	static int requestedBlocks;
 	void printDebug();
 private:
 	static StreamManager* instance;

@@ -4,8 +4,8 @@
 #include <iostream>
 
 VortexS::VortexS(uint64_t sizeStreamPower, StreamPool* blockPool) {
-	this->startPtr = VirtualAlloc(NULL, 256ULL * (1ULL << sizeStreamPower), MEM_RESERVE | MEM_PHYSICAL, PAGE_READWRITE);
-	this->endPtr = (void*)((char*)this->startPtr + 256ULL * (1ULL << sizeStreamPower));
+	this->startPtr = VirtualAlloc(NULL, 8ULL * (1ULL << sizeStreamPower), MEM_RESERVE | MEM_PHYSICAL, PAGE_READWRITE);
+	this->endPtr = (void*)((char*)this->startPtr + 8ULL * (1ULL << sizeStreamPower));
 	this->sizeStreamPower = sizeStreamPower;
 	this->sizeBlockPower = blockPool->getSizeBlockPower();
 	this->blockPool = blockPool;

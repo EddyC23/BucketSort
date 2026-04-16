@@ -10,7 +10,7 @@ int StreamManager::unmapCount = 0;
 int StreamManager::blocksNeededCount = 0;
 int StreamManager::preallocBlocks = 0;
 int StreamManager::requestedBlocks = 0;
-
+int StreamManager::helper = 0;
 StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint64_t sizeBlockPower, uint64_t additionalBlocks) {
 	
 	EnableLockPrivileges();
@@ -79,10 +79,10 @@ void StreamManager::printDebug() {
 	std::cout << "Size Stream in Blocks : " << (1ULL << (sizeStreamPower - sizeBlockPower)) << "\n";
 	std::cout << "Total Block Map Count : " << mapCount << "\n";
 	std::cout << "Total Block Unmap Count : " << unmapCount << "\n";
-	std::cout << "Blocks Left Behind : " << mapCount - unmapCount << "\n";
-	std::cout << "Total Blocks Needed For Sort: " << blocksNeededCount << "\n";
-	std::cout << "Blocks Needed / Blocks Allocated : " << (blocksNeededCount + 0.0)/(preallocBlocks + requestedBlocks) << "\n";
-	std::cout << "Guard Pages Left After Sort: " << guardCount << "\n";
+	std::cout << "Blocks Left Behind : " << mapCount - unmapCount << "\n\n";
+	//std::cout << "Total Blocks Needed For Sort: " << blocksNeededCount << "\n";
+	//std::cout << "Blocks Needed / Blocks Allocated : " << (blocksNeededCount + 0.0)/(preallocBlocks + requestedBlocks) << "\n";
+	//std::cout << "Guard Pages Left After Sort: " << guardCount << "\n";
 }
 
 BOOL StreamManager::EnableLockPrivileges() {

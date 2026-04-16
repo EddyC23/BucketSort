@@ -38,14 +38,17 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 	uint64_t** pNext = buckets[level + 1]; // the buckets are not contiguous in virtual memory eg 0 is not immediately followed by 1
 	memcpy(pNext, p, sizeof(uint64_t*) * numBuckets);
 
+	if (flag == level) {
+		//std::cout << StreamManager::helper++ << "\n";
+		return;
+	}
+
 	for (uint64_t i = 0; i < size; i++) {
 		uint64_t mask = (1 << 8) - 1;
 		uint64_t idx = (buf[i] >> shift) & mask;
 		*pNext[idx]++ = buf[i]; // write the numbner to the bucket at the current location, increment ptr
 	}
-	if (flag == level) {
-		return;
-	}
+	
 	
 
 	for (uint64_t j = 0; j < numBuckets; j++) {

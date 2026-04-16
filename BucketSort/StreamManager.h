@@ -16,6 +16,7 @@ public:
 	static int blocksNeededCount;
 	static int preallocBlocks;
 	static int requestedBlocks;
+	static int helper;
 	void printDebug();
 private:
 	static StreamManager* instance;

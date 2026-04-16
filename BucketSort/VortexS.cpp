@@ -16,6 +16,9 @@ VortexS::VortexS(uint64_t sizeStreamPower, StreamPool* blockPool) {
 		std::cout << GetLastError();
 		exit(-1);
 	}
+	//std::cout << StreamManager::helper++;
+
+
 }
 
 void query(ULONG_PTR ptr) {

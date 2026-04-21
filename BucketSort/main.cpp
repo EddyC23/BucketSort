@@ -25,10 +25,9 @@ int main() {
 		}
 		std::cout << "Input Done.\nSize Stream in Blocks : " << (1ULL << (sizeStreamPower - sizeBlockPower)) << "\n";
 
-		int levelFlag = 2;
+		int levelFlag = 2; // stops before this level of recursion (0 stops before any work is done)
 		BucketSort b(&sm, input, output, 1ULL << (sizeStreamPower - 3), levelFlag);
 		b.sort();
-		std::cout << "Sorting Done\n";
 		sm.printDebug();
 		b.isSorted();
 	}

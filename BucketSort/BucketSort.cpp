@@ -32,17 +32,16 @@ void BucketSort::sort() {
 	outputBufferNext = outputBuffer;
 	sort(inputBuffer, size, 56, 0);
 }
-
+int parentBucket = -1;
 void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
+	
+	
+	//std::cout << level;
 	uint64_t** p = buckets[level];
 	uint64_t** pNext = buckets[level + 1]; // the buckets are not contiguous in virtual memory eg 0 is not immediately followed by 1
 	memcpy(pNext, p, sizeof(uint64_t*) * numBuckets);
 
-	if (flag == level) {
-		//std::cout << StreamManager::helper++ << "\n";
-		return;
-	}
-
+	
 	for (uint64_t i = 0; i < size; i++) {
 		uint64_t mask = (1 << 8) - 1;
 		uint64_t idx = (buf[i] >> shift) & mask;
@@ -50,8 +49,11 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 	}
 	
 	
-
+	if (level == 1) {
+		sm->printDebug();
+	}
 	for (uint64_t j = 0; j < numBuckets; j++) {
+		
 		uint64_t sizeNext = pNext[j] - p[j];
 		if (shift == 0) {
 			memcpy(outputBufferNext, p[j], sizeof(uint64_t) * sizeNext);
@@ -60,12 +62,19 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 			std::sort(p[j], pNext[j]);
 			memcpy(outputBufferNext, p[j], sizeof(uint64_t) * sizeNext);
 			outputBufferNext += sizeNext;
+			
 		}
 		else {
 			sort(p[j], sizeNext, shift - 8, level + 1);
 		}
-
+		
 	}
+	if (level == 1) {
+		sm->printDebug();
+	}
+	
+	
+
 	
 }
 

@@ -12,8 +12,8 @@ int main() {
 		std::mt19937 gen(rd());
 		std::uniform_int_distribution<uint64_t> distribution(0);
 
-		uint64_t numStreams = 1 + 1 + (1 << 8); // 1 input stream, 1 output stream, 256 bucket streams
-		uint64_t sizeStreamPower = 3 + 27; // 1 gb input
+		uint64_t numStreams = 258; // 1 input stream, 1 output stream, 256 bucket streams
+		uint64_t sizeStreamPower = 30; // 1 gb input
 		uint64_t sizeBlockPower = 13;// 1 mb blocks
 		uint64_t additionalBlocks =  256 * 4 + (1 << 8); // 2048 + 256buckets // two blocks lost per level?
 
@@ -25,11 +25,12 @@ int main() {
 		}
 		std::cout << "Input Done.\nSize Stream in Blocks : " << (1ULL << (sizeStreamPower - sizeBlockPower)) << "\n";
 
-		int levelFlag = 2; // stops before this level of recursion (0 stops before any work is done)
+		int levelFlag = 10; // stops before this level of recursion (0 stops before any work is done)
 		BucketSort b(&sm, input, output, 1ULL << (sizeStreamPower - 3), levelFlag);
 		b.sort();
-		sm.printDebug();
+		
 		b.isSorted();
+		sm.printDebug();
 	}
 	//else{
 	//	std::random_device rd;

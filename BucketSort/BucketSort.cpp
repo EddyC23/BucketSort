@@ -48,8 +48,9 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 		*pNext[idx]++ = buf[i]; // write the numbner to the bucket at the current location, increment ptr
 	}
 	
+
 	
-	if (level == 1) {
+	if (level == 0) {
 		sm->printDebug();
 	}
 	for (uint64_t j = 0; j < numBuckets; j++) {
@@ -69,7 +70,7 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 		}
 		
 	}
-	if (level == 1) {
+	if (level == 0) {
 		sm->printDebug();
 	}
 	
@@ -85,7 +86,7 @@ bool BucketSort::isSorted() {
 			return false;
 		}
 	}
-	sm->printDebug();
+	//sm->printDebug();
 	std::cout << "Sorted";
 	return true;
 }

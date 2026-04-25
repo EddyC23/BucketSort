@@ -28,7 +28,6 @@ int main() {
 		int levelFlag = 10; // stops before this level of recursion (0 stops before any work is done)
 		BucketSort b(&sm, input, output, 1ULL << (sizeStreamPower - 3), levelFlag);
 		b.sort();
-		
 		b.isSorted();
 		sm.printDebug();
 	}
@@ -58,3 +57,6 @@ int main() {
 }
 // consolidate virtual alloc to stream manager vortexS
 //for uniform case break it down into levels and find out where blocks are being lost and reduce amount of blocks that are extra
+// after finishing a bucket, reset the bucket, and reset the L pointer visualization of where the blocks are lost, patterns, curios from 518 to
+// have a per bucket linear search through to see where the blocks are lost see where the jump from 2^24 to 2^27 to 2^30, with 2^14 pages
+// save first block later and set the L1 to point to the beginning of a bucket

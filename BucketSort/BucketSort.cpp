@@ -50,9 +50,9 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 	
 
 	
-	if (level == 0) {
-		sm->printDebug();
-	}
+	//if (level == 1) {
+	//	sm->printDebug();
+	//}
 	for (uint64_t j = 0; j < numBuckets; j++) {
 		
 		uint64_t sizeNext = pNext[j] - p[j];
@@ -70,9 +70,9 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 		}
 		
 	}
-	if (level == 0) {
-		sm->printDebug();
-	}
+	//if (level == 1) {
+	//	sm->printDebug();
+	//}
 	
 	
 

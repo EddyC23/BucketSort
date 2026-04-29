@@ -32,7 +32,6 @@ void BucketSort::sort() {
 	outputBufferNext = outputBuffer;
 	sort(inputBuffer, size, 56, 0);
 }
-int parentBucket = -1;
 void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 	
 	
@@ -48,7 +47,9 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 		*pNext[idx]++ = buf[i]; // write the numbner to the bucket at the current location, increment ptr
 	}
 	
-
+	if (level == 0) {
+		std::cout << StreamManager::unmapCount;
+	}
 	
 	//if (level == 1) {
 	//	sm->printDebug();
@@ -82,12 +83,12 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 bool BucketSort::isSorted() {
 	for (uint64_t i = 1; i < size; i++) {
 		if (outputBuffer[i] < outputBuffer[i - 1]) {
-			std::cout << "Not sorted";
+			std::cout << "Not sorted\n";
 			return false;
 		}
 	}
 	//sm->printDebug();
-	std::cout << "Sorted";
+	std::cout << "Sorted\n";
 	return true;
 }
 

@@ -3,6 +3,7 @@
 #include "StreamPool.h"
 #include <unordered_map>
 #include <set>
+#include <vector>
 class StreamManager {
 public:
 	StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint64_t sizeBlockPower, uint64_t additionalBlocks);
@@ -18,6 +19,9 @@ public:
 	static int requestedBlocks;
 	static int helper;
 	void printDebug();
+	std::vector<std::vector<int>> getBlocksLeftBehind();
+	std::vector<std::vector<int>> getBlocksLeftBehindThread();
+
 private:
 	static StreamManager* instance;
 	BOOL EnableLockPrivileges();

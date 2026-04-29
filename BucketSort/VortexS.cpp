@@ -2,10 +2,13 @@
 #include "StreamManager.h"
 #include <cstdio>
 #include <iostream>
-
+#include <vector>
+#include <thread>
 VortexS::VortexS(uint64_t sizeStreamPower, StreamPool* blockPool) {
-	this->startPtr = VirtualAlloc(NULL, 8ULL * (1ULL << sizeStreamPower), MEM_RESERVE | MEM_PHYSICAL, PAGE_READWRITE);
-	this->endPtr = (void*)((char*)this->startPtr + 8ULL * (1ULL << sizeStreamPower));
+
+	uint64_t allocSize = 8ULL * (1ULL << sizeStreamPower);
+	this->startPtr = VirtualAlloc(NULL,allocSize , MEM_RESERVE | MEM_PHYSICAL, PAGE_READWRITE);
+	this->endPtr = (void*)((char*)this->startPtr + allocSize);
 	this->sizeStreamPower = sizeStreamPower;
 	this->sizeBlockPower = blockPool->getSizeBlockPower();
 	this->blockPool = blockPool;
@@ -16,14 +19,12 @@ VortexS::VortexS(uint64_t sizeStreamPower, StreamPool* blockPool) {
 		std::cout << GetLastError();
 		exit(-1);
 	}
-	//std::cout << StreamManager::helper++;
-
 
 }
 
 void query(ULONG_PTR ptr) {
-	MEMORY_BASIC_INFORMATION memInfo;
-	if (!VirtualQuery((void*)(ptr), &memInfo, 1 << 12)) {
+	MEMORY_BASIC_INFORMATION mbi;
+	if (!VirtualQuery((void*)(ptr), &mbi, 1 << 12)) {
 		std::cout << "virtual query failed";
 		std::cout << GetLastError();
 		exit(-1);
@@ -39,11 +40,27 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 	}
 	if (isWriteFault) {
 		ULONG_PTR fptr = info->ExceptionRecord->ExceptionInformation[1];
-		blockPool->mapBlockFromPool(fptr);
-		if (fptr >> sizeBlockPower != ((ULONG_PTR)startPtr) >> sizeBlockPower) { // if its not the first block
+		//how did my method work when this wasnt here ? even wiuth this fixed, the block counts are still occasionally off//////////////////
+		MEMORY_BASIC_INFORMATION mbi;
+		if (!VirtualQuery((void*)(fptr), &mbi, sizeof(mbi))) {
+			std::cout << "virtual query failed";
+			std::cout << GetLastError();	
+			exit(-1);
+		}
+		///////////////////
+		if (mbi.Protect == PAGE_NOACCESS) {
+			removeGuardPage(fptr);
+		}
+		else {
+			if(mbi.Protect != 0)std::cout << mbi.Protect << "abc";
+			blockPool->mapBlockFromPool(fptr);
+			
+		}
+		if (fptr >> sizeBlockPower != ((ULONG_PTR)startPtr) >> sizeBlockPower) {
 			uint64_t blockSizeBytes = 1ULL << sizeBlockPower;
 			setGuardPage(fptr - blockSizeBytes);
 		}
+		
 	}
 	else {
 		ULONG_PTR fptr = info->ExceptionRecord->ExceptionInformation[1];
@@ -59,13 +76,13 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 			removeGuardPage(fptr);
 		}
 		lastReadFault = fptr;
-		MEMORY_BASIC_INFORMATION memInfo;
-		if (!VirtualQuery((void*)(fptr + blockSizeBytes), &memInfo, 1 << 12)) {
+		MEMORY_BASIC_INFORMATION mbi;
+		if (!VirtualQuery((void*)(fptr + blockSizeBytes), &mbi, sizeof(mbi))) {
 			std::cout << "virtual query failed";
 			std::cout << GetLastError();
 			exit(-1);
 		}
-		isLastReadFaultValid = memInfo.Protect == PAGE_NOACCESS;
+		isLastReadFaultValid = mbi.Protect == PAGE_NOACCESS;
 	}
 
 	return EXCEPTION_CONTINUE_EXECUTION;
@@ -86,6 +103,8 @@ DWORD VortexS::setGuardPage(ULONG_PTR ptr) {
 	StreamManager::guardCount++;
 	return oldProtect;
 }
+
+
 DWORD VortexS::removeGuardPage(ULONG_PTR ptr) {
 	DWORD oldProtect = 0;
 	if (!VirtualProtect((void*)ptr, 1, PAGE_READWRITE, &oldProtect)) {
@@ -96,10 +115,46 @@ DWORD VortexS::removeGuardPage(ULONG_PTR ptr) {
 	StreamManager::guardCount--;
 	return oldProtect;
 	/*needed for both release mode and debug on laptop ? non deterministic
-	//MEMORY_BASIC_INFORMATION memInfo;
-	//if (!VirtualQuery((void*)(ptr), &memInfo, 1 << 12)) {
+	//MEMORY_BASIC_INFORMATION mbi;
+	//if (!VirtualQuery((void*)(ptr), &mbi, 1 << 12)) {
 	//	std::cout << "virtual query failed";
 	//	std::cout << GetLastError();
 	//	exit(-1);
 	//}*/
 }
+
+std::vector<int> VortexS::blocksLeftBehind() {
+	std::vector<int> blocks;
+	uint64_t numBlocks = (1 << (sizeStreamPower - sizeBlockPower)) / 128;
+	for (uint64_t i = 0; i < numBlocks; i++) {
+		MEMORY_BASIC_INFORMATION mbi;
+		void* ptr = (void*)(getStartPtr() + i * (1ULL << sizeBlockPower));
+		if (!VirtualQuery(ptr, &mbi, sizeof(mbi))) {
+			std::cout << "virtual query failed";
+			std::cout << GetLastError();
+			exit(-1);
+		}
+		if (mbi.State != MEM_RESERVE) { // when a physical page is mapped to a virtual address the memory status becomes mem_commit
+			blocks.push_back(i);
+		}
+		
+	}
+	return blocks;
+}
+void VortexS::blocksLeftBehindThread(std::vector<int>& blocks) {
+	uint64_t numBlocks = (1ULL << (sizeStreamPower - sizeBlockPower));
+	for (uint64_t i = 0; i < numBlocks; i++) {
+		MEMORY_BASIC_INFORMATION mbi;
+		void* ptr = (void*)(getStartPtr() + i * (1ULL << sizeBlockPower));
+		if (!VirtualQuery(ptr, &mbi, sizeof(mbi))) {
+			std::cout << "virtual query failed";
+			std::cout << GetLastError();
+			exit(-1);
+		}
+		if (mbi.State != MEM_RESERVE) { // when a physical page is mapped to a virtual address the memory status becomes mem_commit
+			blocks.push_back(i);
+		}
+
+	}
+}
+

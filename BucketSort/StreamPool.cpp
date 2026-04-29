@@ -24,7 +24,7 @@ StreamPool::StreamPool(uint64_t numBlocks, uint64_t blockSizePower) {
 		exit(-1);
 	}
 
-	uint64_t pagesPerBlock = 1ULL << blockSizePower - 12;
+	uint64_t pagesPerBlock = 1ULL << (blockSizePower - 12);
 	for (size_t i = 0; i < numBlocks; i++) {
 		blockPool.push(arrayPFN + i * pagesPerBlock);
 	}

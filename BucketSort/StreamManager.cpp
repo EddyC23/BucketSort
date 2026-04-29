@@ -1,6 +1,6 @@
 #include "StreamManager.h"
 #include <iostream>
-
+#include <thread>
 
 StreamManager* StreamManager::instance = nullptr;
 
@@ -83,6 +83,30 @@ void StreamManager::printDebug() {
 	//std::cout << "Total Blocks Needed For Sort: " << blocksNeededCount << "\n";
 	//std::cout << "Blocks Needed / Blocks Allocated : " << (blocksNeededCount + 0.0)/(preallocBlocks + requestedBlocks) << "\n";
 	//std::cout << "Guard Pages Left After Sort: " << guardCount << "\n";
+}
+
+std::vector<std::vector<int>> StreamManager::getBlocksLeftBehind() {
+	std::vector<std::vector<int>> blocksLeft;
+	//std::vector<std::thread*> threadPtrs;
+	for (size_t i = 2; i < numStreams; i++) {
+//		std::thread t(VortexS::blocksLeftBehind, &*streams[i]);
+		blocksLeft.push_back(streams[i]->blocksLeftBehind());
+	}
+	
+	return blocksLeft;
+}
+
+std::vector<std::vector<int>> StreamManager::getBlocksLeftBehindThread() {
+	std::vector<std::vector<int>> blocksLeft(256);
+	std::thread* threadPtrs[256];
+	for (size_t i = 2; i < numStreams; i++) {
+		threadPtrs[i - 2] = new std::thread(&VortexS::blocksLeftBehindThread, streams[i], std::ref(blocksLeft.at(i - 2)));
+	}
+	for (size_t i = 0; i < 256; i++) {
+		threadPtrs[i]->join();
+	}
+	
+	return blocksLeft;
 }
 
 BOOL StreamManager::EnableLockPrivileges() {

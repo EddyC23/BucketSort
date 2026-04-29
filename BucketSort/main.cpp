@@ -5,31 +5,56 @@
 #include "BucketSort.h"
 #include <chrono>
 #include "StreamManager.h"
-
+#include <chrono>
 int main() {
+	std::chrono::steady_clock clk;
+	
+	
+
 	if (true) {
 		std::random_device rd;
 		std::mt19937 gen(rd());
 		std::uniform_int_distribution<uint64_t> distribution(0);
 
 		uint64_t numStreams = 258; // 1 input stream, 1 output stream, 256 bucket streams
-		uint64_t sizeStreamPower = 30; // 1 gb input
-		uint64_t sizeBlockPower = 13;// 1 mb blocks
-		uint64_t additionalBlocks =  256 * 4 + (1 << 8); // 2048 + 256buckets // two blocks lost per level?
+		uint64_t sizeStreamPower = 30; 
+		uint64_t sizeBlockPower = 13;
+		uint64_t additionalBlocks =  256 * 4 + (1 << 8); 
 
 		StreamManager sm(numStreams, sizeStreamPower, sizeBlockPower, additionalBlocks);
 		uint64_t* input = (uint64_t*)sm.getInputStream()->getStartPtr();
 		uint64_t* output = (uint64_t*)sm.getOutputStream()->getStartPtr();
 		for (size_t i = 0; i < 1ULL << (sizeStreamPower - 3); i++) {
-			input[i] = distribution(gen);
+			//input[i] = distribution(gen);
+			uint64_t mask = ~(((1ULL << 8) - 1) << 48);
+			input[i] = distribution(gen) & mask;
 		}
 		std::cout << "Input Done.\nSize Stream in Blocks : " << (1ULL << (sizeStreamPower - sizeBlockPower)) << "\n";
-
+		std::cout << StreamManager::mapCount << " " << StreamManager::unmapCount;
 		int levelFlag = 10; // stops before this level of recursion (0 stops before any work is done)
 		BucketSort b(&sm, input, output, 1ULL << (sizeStreamPower - 3), levelFlag);
 		b.sort();
 		b.isSorted();
 		sm.printDebug();
+		
+
+		
+		auto t1 = clk.now();
+		//std::vector<std::vector<int>> blocksLeft = sm.getBlocksLeftBehind(); // 2200 ms
+		std::vector<std::vector<int>> blocksLeft = sm.getBlocksLeftBehindThread(); //343 ms
+		auto t2 = clk.now();
+		std::cout << "Time to find blocks left behind : " << (std::chrono::duration_cast<std::chrono::milliseconds>)(t2 - t1) << "\n";
+		int counter = 0;
+		for (int i = 0;i <  blocksLeft.size(); i++) {
+			std::cout << i << " : ";
+			for (int j = 0; j < blocksLeft[i].size(); j++) {
+				 std::cout << blocksLeft[i][j] << " ";
+				 counter++;
+			}
+			std::cout << blocksLeft[i].size() <<"\n";
+		}
+		std::cout << counter + 4<< " blocks counted left behind"; // the 4 is from the 2 blocks trivially left in the input and output stream we are losing one extra block somewhere in there
+		
 	}
 	//else{
 	//	std::random_device rd;

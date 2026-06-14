@@ -17,10 +17,10 @@ BucketSort::BucketSort(StreamManager* sm,uint64_t* inputBuffer, uint64_t* output
 	this->outputBufferNext = outputBuffer;
 	this->size = size;
 	this->depthRecursion = 8;
-	this->numBuckets = 1 << 8;
+	this->numBuckets = 256;
 	this->buckets = new uint64_t **[8 + 1];
 	this->flag = flag;
-	
+	this->dummyAntiOptimization = 0;
 	for (size_t i = 0; i < depthRecursion + 1; i++) {
 		this->buckets[i] = new uint64_t *[numBuckets];
 	}
@@ -47,15 +47,7 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 		*pNext[idx]++ = buf[i]; // write the numbner to the bucket at the current location, increment ptr
 	}
 	
-	if (level == 0) {
-		std::cout << StreamManager::unmapCount;
-	}
-	
-	//if (level == 1) {
-	//	sm->printDebug();
-	//}
 	for (uint64_t j = 0; j < numBuckets; j++) {
-		
 		uint64_t sizeNext = pNext[j] - p[j];
 		if (shift == 0) {
 			memcpy(outputBufferNext, p[j], sizeof(uint64_t) * sizeNext);
@@ -70,13 +62,11 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 			sort(p[j], sizeNext, shift - 8, level + 1);
 		}
 		
+		if (level == 0) {
+			sm->cleanUpBlocks(j + 2); // why does this get optimized out in release mode ??? 
+			std::cout << "aopt ";
+		}
 	}
-	//if (level == 1) {
-	//	sm->printDebug();
-	//}
-	
-	
-
 	
 }
 
@@ -87,7 +77,6 @@ bool BucketSort::isSorted() {
 			return false;
 		}
 	}
-	//sm->printDebug();
 	std::cout << "Sorted\n";
 	return true;
 }

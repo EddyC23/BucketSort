@@ -8,16 +8,13 @@
 #include <chrono>
 int main() {
 	std::chrono::steady_clock clk;
-	
-	
-
 	if (true) {
 		std::random_device rd;
 		std::mt19937 gen(rd());
 		std::uniform_int_distribution<uint64_t> distribution(0);
 
 		uint64_t numStreams = 258; // 1 input stream, 1 output stream, 256 bucket streams
-		uint64_t sizeStreamPower = 30; 
+		uint64_t sizeStreamPower = 27; 
 		uint64_t sizeBlockPower = 13;
 		uint64_t additionalBlocks =  256 * 4 + (1 << 8); 
 
@@ -30,7 +27,7 @@ int main() {
 			input[i] = distribution(gen) & mask;
 		}
 		std::cout << "Input Done.\nSize Stream in Blocks : " << (1ULL << (sizeStreamPower - sizeBlockPower)) << "\n";
-		std::cout << StreamManager::mapCount << " " << StreamManager::unmapCount;
+		//std::cout << StreamManager::mapCount << " " << StreamManager::unmapCount;
 		int levelFlag = 10; // stops before this level of recursion (0 stops before any work is done)
 		BucketSort b(&sm, input, output, 1ULL << (sizeStreamPower - 3), levelFlag);
 		b.sort();

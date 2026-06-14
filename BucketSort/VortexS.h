@@ -11,8 +11,6 @@ public:
 	ULONG_PTR getEndPtr();
 	std::vector<int> blocksLeftBehind();
 	void blocksLeftBehindThread(std::vector<int>& blocks);
-
-
 private:
 	void* startPtr;
 	void* endPtr;

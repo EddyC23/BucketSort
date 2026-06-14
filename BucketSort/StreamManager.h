@@ -8,6 +8,7 @@ class StreamManager {
 public:
 	StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint64_t sizeBlockPower, uint64_t additionalBlocks);
 	VortexS* getStreamFromAddressLinear(ULONG_PTR faultAddress);
+	int getStreamIndexFromAddressLinear(ULONG_PTR faultAddress);
 	VortexS* getInputStream();
 	VortexS* getOutputStream();
 	VortexS* getNthStream(int n);
@@ -21,6 +22,8 @@ public:
 	void printDebug();
 	std::vector<std::vector<int>> getBlocksLeftBehind();
 	std::vector<std::vector<int>> getBlocksLeftBehindThread();
+	void cleanUpBlocks(int i);
+
 
 private:
 	static StreamManager* instance;
@@ -34,7 +37,5 @@ private:
 	VortexS** streams;
 	StreamPool* blockPool;
 	std::unordered_map<ULONG_PTR, VortexS*> startAddressToStream;
-	std::unordered_map<ULONG_PTR, VortexS*> endAddressToStream;
-	std::set<ULONG_PTR> intervalTree;
-	
+	std::unordered_map<ULONG_PTR, VortexS*> endAddressToStream;	
 };

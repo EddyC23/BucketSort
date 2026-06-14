@@ -1,7 +1,7 @@
 #include "StreamManager.h"
 #include <iostream>
 #include <thread>
-
+#include "StreamPool.h"
 StreamManager* StreamManager::instance = nullptr;
 
 int StreamManager::guardCount = 0;
@@ -26,7 +26,7 @@ StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint
 	this->numStreams = numStreams;
 	
 	StreamManager::preallocBlocks = (1ULL << (sizeStreamPower - sizeBlockPower)) * 256.0 / 255.0 + additionalBlocks;
-	this->blockPool = new StreamPool(StreamManager::preallocBlocks, sizeBlockPower);
+	this->blockPool = new StreamPool(StreamManager::preallocBlocks, sizeBlockPower, this);
 	
 	this->inputStream = new VortexS(sizeStreamPower, blockPool);
 	this->outputStream = new VortexS(sizeStreamPower, blockPool);
@@ -65,6 +65,14 @@ VortexS* StreamManager::getStreamFromAddressLinear(ULONG_PTR faultAddress) {
 		}
 	}
 	return nullptr;
+}
+int StreamManager::getStreamIndexFromAddressLinear(ULONG_PTR faultAddress) {
+	for (int i = 0; i < numStreams; i++) {
+		if (faultAddress >= streams[i]->getStartPtr() && faultAddress < streams[i]->getEndPtr()) {
+			return i;
+		}
+	}
+	return -1;
 }
 VortexS* StreamManager::getInputStream() {
 	return this->inputStream;
@@ -107,6 +115,11 @@ std::vector<std::vector<int>> StreamManager::getBlocksLeftBehindThread() {
 	}
 	
 	return blocksLeft;
+}
+
+void StreamManager::cleanUpBlocks(int i) {
+	// frees all blocks that are left still behind after a stream is done, leaves behind the first block(will need to reset pointer for this) ?
+	blockPool->cleanUpBlocks(i);
 }
 
 BOOL StreamManager::EnableLockPrivileges() {

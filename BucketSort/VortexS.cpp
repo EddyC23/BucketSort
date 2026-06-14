@@ -158,3 +158,4 @@ void VortexS::blocksLeftBehindThread(std::vector<int>& blocks) {
 	}
 }
 
+

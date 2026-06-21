@@ -64,8 +64,12 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 		
 		if (level == 0) {
 			sm->cleanUpBlocks(j + 2); // why does this get optimized out in release mode ??? 
-			std::cout << "aopt ";
+			this->dummyAntiOptimization++;
 		}
+		if (this->dummyAntiOptimization == 300) {
+			std::cout << "done";
+		}
+		
 	}
 	
 }

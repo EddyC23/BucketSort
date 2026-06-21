@@ -7,7 +7,6 @@
 #include "StreamManager.h"
 #include <chrono>
 int main() {
-	std::chrono::steady_clock clk;
 	if (true) {
 		std::random_device rd;
 		std::mt19937 gen(rd());
@@ -36,21 +35,6 @@ int main() {
 		
 
 		
-		auto t1 = clk.now();
-		//std::vector<std::vector<int>> blocksLeft = sm.getBlocksLeftBehind(); // 2200 ms
-		std::vector<std::vector<int>> blocksLeft = sm.getBlocksLeftBehindThread(); //343 ms
-		auto t2 = clk.now();
-		std::cout << "Time to find blocks left behind : " << (std::chrono::duration_cast<std::chrono::milliseconds>)(t2 - t1) << "\n";
-		int counter = 0;
-		for (int i = 0;i <  blocksLeft.size(); i++) {
-			std::cout << i << " : ";
-			for (int j = 0; j < blocksLeft[i].size(); j++) {
-				 std::cout << blocksLeft[i][j] << " ";
-				 counter++;
-			}
-			std::cout << blocksLeft[i].size() <<"\n";
-		}
-		std::cout << counter + 4<< " blocks counted left behind"; // the 4 is from the 2 blocks trivially left in the input and output stream we are losing one extra block somewhere in there
 		
 	}
 	//else{

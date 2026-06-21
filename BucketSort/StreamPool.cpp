@@ -82,18 +82,21 @@ void StreamPool::requestAdditionalBlock() {
 uint64_t StreamPool::getSizeBlockPower() {
 	return blockSizePower;
 }
-
 void StreamPool::cleanUpBlocks(int streamIndex) {
-	std::set<ULONG_PTR>* mappedAddress = this->streamToMappedAddress[streamIndex];
+	std::set<ULONG_PTR>* mappedAddress = this->streamToMappedAddress[streamIndex + 2];
 	for (auto it = mappedAddress->begin(); it != mappedAddress->end();) {
+		//if (*it == sm->getNthStream(streamIndex)->getStartPtr()) {
+		//	it++;
+		//	continue;
+		//}
 		void* vptr = (void*)*it;
 		uint64_t blockSizePages = 1ULL << (blockSizePower - 12);
-		blockPool.push(ptrToPFN[vptr]);
 		if (!MapUserPhysicalPages(vptr, blockSizePages, NULL)) {
 			std::cout << "unmap block failed";
 			std::cout << GetLastError();
 			exit(-1);
 		}
+		blockPool.push(ptrToPFN.find(vptr)->second);
 		StreamManager::unmapCount++;
 		it = mappedAddress->erase(it);
 	}

@@ -1,6 +1,7 @@
 #include "StreamManager.h"
 #include <iostream>
 #include <thread>
+#include <chrono>
 #include "StreamPool.h"
 StreamManager* StreamManager::instance = nullptr;
 
@@ -91,6 +92,23 @@ void StreamManager::printDebug() {
 	//std::cout << "Total Blocks Needed For Sort: " << blocksNeededCount << "\n";
 	//std::cout << "Blocks Needed / Blocks Allocated : " << (blocksNeededCount + 0.0)/(preallocBlocks + requestedBlocks) << "\n";
 	//std::cout << "Guard Pages Left After Sort: " << guardCount << "\n";
+	std::chrono::steady_clock clk;
+	auto t1 = clk.now();
+	//std::vector<std::vector<int>> blocksLeft = sm.getBlocksLeftBehind(); // 2200 ms
+	std::vector<std::vector<int>> blocksLeft = getBlocksLeftBehindThread(); //343 ms
+	auto t2 = clk.now();
+	std::cout << "Time to find blocks left behind : " << (std::chrono::duration_cast<std::chrono::milliseconds>)(t2 - t1) << "\n";
+	int counter = 0;
+	for (int i = 0; i < blocksLeft.size(); i++) {
+		std::cout << i << " : ";
+		for (int j = 0; j < blocksLeft[i].size(); j++) {
+			std::cout << blocksLeft[i][j] << " ";
+			counter++;
+		}
+		std::cout << std::right << std::setw(50) << "| " << blocksLeft[i].size() << "blocks\n";
+	}
+	std::cout << counter << " blocks counted left behind from buckets | 4 blocks left behind from input output stream\n"; // the 4 is from the 2 blocks trivially left in the input and output stream we are losing one extra block somewhere in there
+
 }
 
 std::vector<std::vector<int>> StreamManager::getBlocksLeftBehind() {
@@ -120,6 +138,10 @@ std::vector<std::vector<int>> StreamManager::getBlocksLeftBehindThread() {
 void StreamManager::cleanUpBlocks(int i) {
 	// frees all blocks that are left still behind after a stream is done, leaves behind the first block(will need to reset pointer for this) ?
 	blockPool->cleanUpBlocks(i);
+}
+
+void StreamManager::mapBlockFromPool(ULONG_PTR ptr) {
+	blockPool->mapBlockFromPool(ptr);
 }
 
 BOOL StreamManager::EnableLockPrivileges() {

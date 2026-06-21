@@ -23,6 +23,7 @@ public:
 	std::vector<std::vector<int>> getBlocksLeftBehind();
 	std::vector<std::vector<int>> getBlocksLeftBehindThread();
 	void cleanUpBlocks(int i);
+	void mapBlockFromPool(ULONG_PTR ptr);
 
 
 private:

@@ -20,7 +20,6 @@ BucketSort::BucketSort(StreamManager* sm,uint64_t* inputBuffer, uint64_t* output
 	this->numBuckets = 256;
 	this->buckets = new uint64_t **[8 + 1];
 	this->flag = flag;
-	this->dummyAntiOptimization = 0;
 	for (size_t i = 0; i < depthRecursion + 1; i++) {
 		this->buckets[i] = new uint64_t *[numBuckets];
 	}
@@ -32,7 +31,7 @@ void BucketSort::sort() {
 	outputBufferNext = outputBuffer;
 	sort(inputBuffer, size, 56, 0);
 }
-void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
+__declspec(noinline) void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 	
 	
 	//std::cout << level;
@@ -63,11 +62,12 @@ void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 		}
 		
 		if (level == 0) {
-			sm->cleanUpBlocks(j + 2); // why does this get optimized out in release mode ??? 
-			this->dummyAntiOptimization++;
-		}
-		if (this->dummyAntiOptimization == 300) {
-			std::cout << "done";
+			pNext[j] = (uint64_t*)sm->getNthStream(j)->getStartPtr();
+			for (size_t k = 0; k <= j; k++) {
+				sm->cleanUpBlocks(k);
+			}
+			sm->mapBlockFromPool(sm->getNthStream(j)->getStartPtr());
+			//sm->printDebug();
 		}
 		
 	}

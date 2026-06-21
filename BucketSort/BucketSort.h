@@ -13,8 +13,7 @@ class BucketSort {
 		uint64_t size;
 		StreamManager* sm;
 		uint64_t*** buckets;
-		void sort(uint64_t* buffer, uint64_t size, int shift, int level);
-		int dummyAntiOptimization;
+		__declspec(noinline) void sort(uint64_t* buffer, uint64_t size, int shift, int level);
 	public:	
 		BucketSort(StreamManager* sm, uint64_t * inputBuffer, uint64_t * outputBuffer, uint64_t size, int flag);
 		void sort();

@@ -14,7 +14,7 @@ uint64_t keysPerSecond(uint64_t keyCount, std::chrono::time_point<std::chrono::s
 }
 
 int main() {
-	if (true) {
+	if (false) {
 		std::random_device rd;
 		std::mt19937 gen(rd());
 		std::uniform_int_distribution<uint64_t> distribution(0);
@@ -69,11 +69,17 @@ int main() {
 		}
 		std::cout << "Input Done.\nSize Stream in Blocks : " << (1ULL << (sizeStreamPower - sizeBlockPower)) << "\n";
 
-		BucketSort b(&sm, input, output, 1ULL << (sizeStreamPower - 3), 1000);
+		BucketSort b(&sm, input, output, 1ULL << (sizeStreamPower - 3), 10);
+		std::cout << "Beginning sort.\n";
+		auto start = std::chrono::steady_clock::now();
 		b.sort();
-		std::cout << "Sorting Done\n";
-		sm.printDebug();
+		auto end = std::chrono::steady_clock::now();
 		b.isSorted();
+		sm.printDebug();
+		uint64_t keyCount = 1ULL << (sizeStreamPower - 3);
+		//std::cout << std::format("{} {}", keyCount, (end - start).count() / 1000000);
+		std::cout << "\nSort Speed : " << keysPerSecond(keyCount, start, end) / 1000000.0 << " million keys/s\n\n\n\n\n";
+
 	}
 }
 // consolidate virtual alloc to stream manager vortexS

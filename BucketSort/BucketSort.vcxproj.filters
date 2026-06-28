@@ -15,33 +15,33 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="Source\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BucketSort.cpp">
+    <ClCompile Include="Source\BucketSort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VortexS.cpp">
+    <ClCompile Include="Source\VortexS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StreamPool.cpp">
+    <ClCompile Include="Source\StreamPool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StreamManager.cpp">
+    <ClCompile Include="Source\StreamManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="StreamManager.h">
+    <ClInclude Include="Headers\BucketSort.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BucketSort.h">
+    <ClInclude Include="Headers\StreamManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StreamPool.h">
+    <ClInclude Include="Headers\StreamPool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VortexS.h">
+    <ClInclude Include="Headers\VortexS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -70,6 +70,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(IncludePath)</IncludePath>
+    <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -106,8 +110,9 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PreprocessToFile>false</PreprocessToFile>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <AdditionalIncludeDirectories>$(ProjectDir)Headers;$(ProjectDir)Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -124,6 +129,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PreprocessToFile>false</PreprocessToFile>
+      <AdditionalIncludeDirectories>$(ProjectDir)Headers;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,17 +137,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="BucketSort.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="StreamManager.cpp" />
-    <ClCompile Include="StreamPool.cpp" />
-    <ClCompile Include="VortexS.cpp" />
+    <ClCompile Include="Source\BucketSort.cpp" />
+    <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\StreamManager.cpp" />
+    <ClCompile Include="Source\StreamPool.cpp" />
+    <ClCompile Include="Source\VortexS.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BucketSort.h" />
-    <ClInclude Include="StreamManager.h" />
-    <ClInclude Include="StreamPool.h" />
-    <ClInclude Include="VortexS.h" />
+    <ClInclude Include="Headers\BucketSort.h" />
+    <ClInclude Include="Headers\StreamManager.h" />
+    <ClInclude Include="Headers\StreamPool.h" />
+    <ClInclude Include="Headers\VortexS.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

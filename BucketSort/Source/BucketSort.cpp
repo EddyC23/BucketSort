@@ -1,5 +1,5 @@
 #include "BucketSort.h"
-#include "StreamManager.h"
+#include "../Headers/StreamManager.h"
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
@@ -67,21 +67,20 @@ __declspec(noinline) void BucketSort::sort(uint64_t* buf, uint64_t size, int shi
 				sm->cleanUpBlocks(k);
 			}
 			sm->mapBlockFromPool(sm->getNthStream(j)->getStartPtr());
-			//sm->printDebug();
 		}
 		
 	}
 	
 }
-
+//check the max amount of block used
 bool BucketSort::isSorted() {
 	for (uint64_t i = 1; i < size; i++) {
 		if (outputBuffer[i] < outputBuffer[i - 1]) {
-			std::cout << "Not sorted\n";
+			std::cout << "Not sorted.\n";
 			return false;
 		}
 	}
-	std::cout << "Sorted\n";
+	std::cout << "Sorted.\n";
 	return true;
 }
 

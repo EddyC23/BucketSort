@@ -13,8 +13,11 @@ int StreamManager::preallocBlocks = 0;
 int StreamManager::requestedBlocks = 0;
 int StreamManager::helper = 0;
 StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint64_t sizeBlockPower, uint64_t additionalBlocks) {
-	
-	EnableLockPrivileges();
+	if (!EnableLockPrivileges()) {
+		std::cout << "enable lock privileges failed";
+		std::cout << GetLastError();
+		exit(-1);
+	}
 	if (AddVectoredExceptionHandler(1, handler) == NULL) {
 		std::cout << "add vectored exception handler failed";
 		std::cout << GetLastError();
@@ -85,11 +88,12 @@ VortexS* StreamManager::getNthStream(int n) {
 	return streams[n + 2];
 }
 void StreamManager::printDebug() {
-	std::cout << "Size Stream in Blocks : " << (1ULL << (sizeStreamPower - sizeBlockPower)) << "\n";
+	uint64_t sizeStreamBlock = (1ULL << (sizeStreamPower - sizeBlockPower));
+	std::cout << "Size Stream in Blocks : " << sizeStreamBlock << "\n";
 	std::cout << "Total Block Map Count : " << mapCount << "\n";
 	std::cout << "Total Block Unmap Count : " << unmapCount << "\n";
+	std::cout << "Max Block Usage During Sort: " << blocksNeededCount << " (" << (blocksNeededCount + 0.0) * 100 / sizeStreamBlock << "% of stream size)\n";
 	std::cout << "Blocks Left Behind : " << mapCount - unmapCount << "\n\n";
-	//std::cout << "Total Blocks Needed For Sort: " << blocksNeededCount << "\n";
 	//std::cout << "Blocks Needed / Blocks Allocated : " << (blocksNeededCount + 0.0)/(preallocBlocks + requestedBlocks) << "\n";
 	//std::cout << "Guard Pages Left After Sort: " << guardCount << "\n";
 	std::chrono::steady_clock clk;
@@ -99,16 +103,22 @@ void StreamManager::printDebug() {
 	auto t2 = clk.now();
 	std::cout << "Time to find blocks left behind : " << (std::chrono::duration_cast<std::chrono::milliseconds>)(t2 - t1) << "\n";
 	int counter = 0;
+	///const char* ptr = nullptr;
 	for (int i = 0; i < blocksLeft.size(); i++) {
-		std::cout << i << " : ";
+		std::string s = "";
+		s += std::to_string(i) + " : ";
+		//if (ptr == nullptr) {
+		//	ptr = i + " : ";
+		//}
+		//s += i + " : ";
 		for (int j = 0; j < blocksLeft[i].size(); j++) {
-			std::cout << blocksLeft[i][j] << " ";
+			s += std::to_string(blocksLeft[i][j]) + " ";
 			counter++;
 		}
-		std::cout << std::right << std::setw(50) << "| " << blocksLeft[i].size() << "blocks\n";
+		std::cout << std::left << std::setw(50) << s << "|" << blocksLeft[i].size() << "blocks\n";
 	}
-	std::cout << counter << " blocks counted left behind from buckets | 4 blocks left behind from input output stream\n"; // the 4 is from the 2 blocks trivially left in the input and output stream we are losing one extra block somewhere in there
-
+	std::cout << std::format("\n{} blocks counted left behind from buckets\n2 blocks left behind from input stream\n2 blocks left behind from output stream\n{} blocks left behind total\n", counter, 4 + counter); // the 4 is from the 2 blocks trivially left in the input and output stream we are losing one extra block somewhere in there
+	//std::cout << ptr;
 }
 
 std::vector<std::vector<int>> StreamManager::getBlocksLeftBehind() {
@@ -121,6 +131,8 @@ std::vector<std::vector<int>> StreamManager::getBlocksLeftBehind() {
 	
 	return blocksLeft;
 }
+
+
 
 std::vector<std::vector<int>> StreamManager::getBlocksLeftBehindThread() {
 	std::vector<std::vector<int>> blocksLeft(256);

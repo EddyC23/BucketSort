@@ -11,6 +11,7 @@ public:
 	int getStreamIndexFromAddressLinear(ULONG_PTR faultAddress);
 	VortexS* getInputStream();
 	VortexS* getOutputStream();
+	VortexS* getBucketStream(int n);
 	VortexS* getNthStream(int n);
 	static int guardCount;
 	static int mapCount;

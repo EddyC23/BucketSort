@@ -84,8 +84,11 @@ VortexS* StreamManager::getInputStream() {
 VortexS* StreamManager::getOutputStream() {
 	return this->outputStream;
 }
-VortexS* StreamManager::getNthStream(int n) {
+VortexS* StreamManager::getBucketStream(int n) {
 	return streams[n + 2];
+}
+VortexS* StreamManager::getNthStream(int n) {
+	return streams[n];
 }
 void StreamManager::printDebug() {
 	uint64_t sizeStreamBlock = (1ULL << (sizeStreamPower - sizeBlockPower));
@@ -94,23 +97,15 @@ void StreamManager::printDebug() {
 	std::cout << "Total Block Unmap Count : " << unmapCount << "\n";
 	std::cout << "Max Block Usage During Sort: " << blocksNeededCount << " (" << (blocksNeededCount + 0.0) * 100 / sizeStreamBlock << "% of stream size)\n";
 	std::cout << "Blocks Left Behind : " << mapCount - unmapCount << "\n\n";
-	//std::cout << "Blocks Needed / Blocks Allocated : " << (blocksNeededCount + 0.0)/(preallocBlocks + requestedBlocks) << "\n";
-	//std::cout << "Guard Pages Left After Sort: " << guardCount << "\n";
 	std::chrono::steady_clock clk;
 	auto t1 = clk.now();
-	//std::vector<std::vector<int>> blocksLeft = sm.getBlocksLeftBehind(); // 2200 ms
 	std::vector<std::vector<int>> blocksLeft = getBlocksLeftBehindThread(); //343 ms
 	auto t2 = clk.now();
 	std::cout << "Time to find blocks left behind : " << (std::chrono::duration_cast<std::chrono::milliseconds>)(t2 - t1) << "\n";
 	int counter = 0;
-	///const char* ptr = nullptr;
 	for (int i = 0; i < blocksLeft.size(); i++) {
 		std::string s = "";
 		s += std::to_string(i) + " : ";
-		//if (ptr == nullptr) {
-		//	ptr = i + " : ";
-		//}
-		//s += i + " : ";
 		for (int j = 0; j < blocksLeft[i].size(); j++) {
 			s += std::to_string(blocksLeft[i][j]) + " ";
 			counter++;
@@ -118,27 +113,13 @@ void StreamManager::printDebug() {
 		std::cout << std::left << std::setw(50) << s << "|" << blocksLeft[i].size() << "blocks\n";
 	}
 	std::cout << std::format("\n{} blocks counted left behind from buckets\n2 blocks left behind from input stream\n2 blocks left behind from output stream\n{} blocks left behind total\n", counter, 4 + counter); // the 4 is from the 2 blocks trivially left in the input and output stream we are losing one extra block somewhere in there
-	//std::cout << ptr;
 }
-
-std::vector<std::vector<int>> StreamManager::getBlocksLeftBehind() {
-	std::vector<std::vector<int>> blocksLeft;
-	//std::vector<std::thread*> threadPtrs;
-	for (size_t i = 2; i < numStreams; i++) {
-//		std::thread t(VortexS::blocksLeftBehind, &*streams[i]);
-		blocksLeft.push_back(streams[i]->blocksLeftBehind());
-	}
-	
-	return blocksLeft;
-}
-
-
 
 std::vector<std::vector<int>> StreamManager::getBlocksLeftBehindThread() {
 	std::vector<std::vector<int>> blocksLeft(256);
 	std::thread* threadPtrs[256];
 	for (size_t i = 2; i < numStreams; i++) {
-		threadPtrs[i - 2] = new std::thread(&VortexS::blocksLeftBehindThread, streams[i], std::ref(blocksLeft.at(i - 2)));
+		threadPtrs[i - 2] = new std::thread(&StreamPool::getBlocksLeftBehindThread, blockPool, i-2, std::ref(blocksLeft.at(i - 2)));
 	}
 	for (size_t i = 0; i < 256; i++) {
 		threadPtrs[i]->join();

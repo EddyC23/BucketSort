@@ -101,3 +101,13 @@ void StreamPool::cleanUpBlocks(int streamIndex) {
 		it = mappedAddress->erase(it);
 	}
 }
+
+void StreamPool::getBlocksLeftBehindThread(int streamIndex, std::vector<int>& blocksLeft) {
+	std::set<ULONG_PTR>* mappedAddress = this->streamToMappedAddress[streamIndex + 2];
+	ULONG_PTR startPtr = sm->getBucketStream(streamIndex)->getStartPtr();
+	for (auto it = mappedAddress->begin(); it != mappedAddress->end(); it++) {
+		ULONG_PTR currPtr = *it;
+		int blockIndex = (startPtr - currPtr) >> blockSizePower;
+		blocksLeft.push_back(blockIndex);
+	}
+}

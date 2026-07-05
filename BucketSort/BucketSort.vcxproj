@@ -142,12 +142,15 @@
     <ClCompile Include="Source\StreamManager.cpp" />
     <ClCompile Include="Source\StreamPool.cpp" />
     <ClCompile Include="Source\VortexS.cpp" />
+    <ClCompile Include="Source\writer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\BucketSort.h" />
+    <ClInclude Include="Headers\commons.h" />
     <ClInclude Include="Headers\StreamManager.h" />
     <ClInclude Include="Headers\StreamPool.h" />
     <ClInclude Include="Headers\VortexS.h" />
+    <ClInclude Include="Headers\writer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

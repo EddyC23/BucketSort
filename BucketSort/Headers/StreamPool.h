@@ -4,16 +4,17 @@
 #include <stack>
 #include <unordered_map>
 #include <set>
+#include <vector>
 class StreamManager;
 class StreamPool {
 public:
 	StreamPool(uint64_t numBlocks, uint64_t blockSizePower, StreamManager* sm);
 	void mapBlockFromPool(ULONG_PTR ptr);
 	void unmapBlockToPool(ULONG_PTR ptr);
-	void unmapBlockToPoolIterator(ULONG_PTR ptr, std::set<ULONG_PTR>::iterator& it, std::set<ULONG_PTR>& mapped);
 	void requestAdditionalBlock();
 	uint64_t getSizeBlockPower();
-	void cleanUpBlocks(int i);
+	void cleanUpBlocks(int streamIndex);
+	void getBlocksLeftBehindThread(int streamIndex, std::vector<int>& blocksLeft);
 private:
 	std::stack<PULONG_PTR> blockPool;
 	std::unordered_map <void*, PULONG_PTR> ptrToPFN;

@@ -24,7 +24,7 @@ BucketSort::BucketSort(StreamManager* sm,uint64_t* inputBuffer, uint64_t* output
 		this->buckets[i] = new uint64_t *[numBuckets];
 	}
 	for (size_t i = 0; i < numBuckets; i++) {
-		this->buckets[0][i] = (uint64_t*)sm->getNthStream(i)->getStartPtr();
+		this->buckets[0][i] = (uint64_t*)sm->getBucketStream(i)->getStartPtr();
 	}
 }
 void BucketSort::sort() {
@@ -62,11 +62,11 @@ __declspec(noinline) void BucketSort::sort(uint64_t* buf, uint64_t size, int shi
 		}
 		
 		if (level == 0) {
-			pNext[j] = (uint64_t*)sm->getNthStream(j)->getStartPtr();
+			pNext[j] = (uint64_t*)sm->getBucketStream(j)->getStartPtr();
 			for (size_t k = 0; k <= j; k++) {
 				sm->cleanUpBlocks(k);
 			}
-			sm->mapBlockFromPool(sm->getNthStream(j)->getStartPtr());
+			sm->mapBlockFromPool(sm->getBucketStream(j)->getStartPtr());
 		}
 		
 	}

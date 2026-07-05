@@ -129,7 +129,7 @@ std::vector<std::vector<int>> StreamManager::getBlocksLeftBehindThread() {
 }
 
 void StreamManager::cleanUpBlocks(int i) {
-	// frees all blocks that are left still behind after a stream is done, leaves behind the first block(will need to reset pointer for this) ?
+	// frees all blocks that are left still behind after a stream is done, leaves behind the first block(will need to reset pointer for this) ? /// i dont like that there are 2 levels of inderiction
 	blockPool->cleanUpBlocks(i);
 }
 

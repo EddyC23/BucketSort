@@ -2,11 +2,11 @@
 #include <algorithm>
 #include <windows.h>
 #include <random>
+#include <chrono>
 #include "BucketSort.h"
-#include <chrono>
 #include "StreamManager.h"
-#include <chrono>
 #include "writer.h"
+
 using clk = std::chrono::steady_clock;
 const double ONE_BILLION = 1000000000;
 const double ONE_MILLION = 1000000;

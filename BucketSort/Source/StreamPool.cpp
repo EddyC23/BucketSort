@@ -85,10 +85,10 @@ uint64_t StreamPool::getSizeBlockPower() {
 void StreamPool::cleanUpBlocks(int streamIndex) {
 	std::set<ULONG_PTR>* mappedAddress = this->streamToMappedAddress[streamIndex + 2];
 	for (auto it = mappedAddress->begin(); it != mappedAddress->end();) {
-		//if (*it == sm->getNthStream(streamIndex)->getStartPtr()) {
-		//	it++;
-		//	continue;
-		//}
+		if (*it == sm->getNthStream(streamIndex)->getStartPtr()) {
+			it++;
+			continue;
+		}
 		void* vptr = (void*)*it;
 		uint64_t blockSizePages = 1ULL << (blockSizePower - 12);
 		if (!MapUserPhysicalPages(vptr, blockSizePages, NULL)) {

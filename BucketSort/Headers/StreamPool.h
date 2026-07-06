@@ -9,6 +9,7 @@ class StreamManager;
 class StreamPool {
 public:
 	StreamPool(uint64_t numBlocks, uint64_t blockSizePower, StreamManager* sm);
+	~StreamPool();
 	void mapBlockFromPool(ULONG_PTR ptr);
 	void unmapBlockToPool(ULONG_PTR ptr);
 	void requestAdditionalBlock();

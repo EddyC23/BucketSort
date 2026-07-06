@@ -7,12 +7,13 @@
 class StreamManager {
 public:
 	StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint64_t sizeBlockPower, uint64_t additionalBlocks);
+	~StreamManager();
+	static StreamManager* instance;
 	VortexS* getStreamFromAddressLinear(ULONG_PTR faultAddress);
 	int getStreamIndexFromAddressLinear(ULONG_PTR faultAddress);
 	VortexS* getInputStream();
 	VortexS* getOutputStream();
-	VortexS* getBucketStream(int n);
-	VortexS* getNthStream(int n);
+	VortexS* getBucketStream(int bucketIndex);
 	static int guardCount;
 	static int mapCount;
 	static int unmapCount;
@@ -28,7 +29,6 @@ public:
 
 
 private:
-	static StreamManager* instance;
 	BOOL EnableLockPrivileges();
 	static LONG WINAPI handler(PEXCEPTION_POINTERS info);
 	VortexS* inputStream;

@@ -84,11 +84,8 @@ VortexS* StreamManager::getInputStream() {
 VortexS* StreamManager::getOutputStream() {
 	return this->outputStream;
 }
-VortexS* StreamManager::getBucketStream(int n) {
-	return streams[n + 2];
-}
-VortexS* StreamManager::getNthStream(int n) {
-	return streams[n];
+VortexS* StreamManager::getBucketStream(int bucketIndex) {
+	return streams[bucketIndex + 2];
 }
 void StreamManager::printDebug() {
 	uint64_t sizeStreamBlock = (1ULL << (sizeStreamPower - sizeBlockPower));
@@ -135,6 +132,10 @@ void StreamManager::cleanUpBlocks(int i) {
 
 void StreamManager::mapBlockFromPool(ULONG_PTR ptr) {
 	blockPool->mapBlockFromPool(ptr);
+}
+
+StreamManager::~StreamManager() {
+	delete this->blockPool;
 }
 
 BOOL StreamManager::EnableLockPrivileges() {

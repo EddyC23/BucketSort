@@ -32,6 +32,7 @@ void query(ULONG_PTR ptr) {
 }
 
 LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
+
 	bool isAccessViolation = info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION;
 	bool isWriteFault = info->ExceptionRecord->ExceptionInformation[0];
 	if (!isAccessViolation) {
@@ -39,6 +40,8 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 	if (isWriteFault) {
+
+
 		ULONG_PTR fptr = info->ExceptionRecord->ExceptionInformation[1];
 		//how did my method work when this wasnt here ? even wiuth this fixed, the block counts are still occasionally off//////////////////
 		MEMORY_BASIC_INFORMATION mbi;
@@ -48,15 +51,14 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 			exit(-1);
 		}
 		///////////////////
-		if (mbi.Protect == PAGE_NOACCESS) {
+		if (mbi.Protect !=  NULL) {
+			std::cout << "is this possible ? "; //i guess it is ? 
 			removeGuardPage(fptr);
 		}
 		else {
-			if(mbi.Protect != 0)std::cout << mbi.Protect << "abc";
 			blockPool->mapBlockFromPool(fptr);
-			
 		}
-		if (fptr >> sizeBlockPower != ((ULONG_PTR)startPtr) >> sizeBlockPower) {
+		if (fptr != (ULONG_PTR)startPtr) { // do i need this bitshift? does it always perfectly align
 			uint64_t blockSizeBytes = 1ULL << sizeBlockPower;
 			setGuardPage(fptr - blockSizeBytes);
 		}
@@ -65,6 +67,7 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 	else {
 		ULONG_PTR fptr = info->ExceptionRecord->ExceptionInformation[1];
 		uint64_t blockSizeBytes = 1ULL << blockPool->getSizeBlockPower();
+
 		if (lastReadFault == -1) {
 			removeGuardPage(fptr);
 		}
@@ -84,6 +87,10 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 		}
 		isLastReadFaultValid = mbi.Protect == PAGE_NOACCESS;
 	}
+	//if (StreamManager::guardCount < 0 and StreamManager::guardCount % 10000 == 0) {
+	//	StreamManager::instance->printDebug();
+	//	std::cout << StreamManager::guardCount << " ";
+	//}
 
 	return EXCEPTION_CONTINUE_EXECUTION;
 }

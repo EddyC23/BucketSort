@@ -54,6 +54,7 @@ void StreamPool::unmapBlockToPool(ULONG_PTR ptr) {
 	void* vptr = (void*)ptr;
 	uint64_t blockSizePages = 1ULL << (blockSizePower - 12);
 	blockPool.push(ptrToPFN[vptr]);
+	ptrToPFN.erase(vptr);
 	if (!MapUserPhysicalPages(vptr, blockSizePages, NULL)) {
 		std::cout << "unmap block failed";
 		std::cout << GetLastError();
@@ -85,10 +86,10 @@ uint64_t StreamPool::getSizeBlockPower() {
 void StreamPool::cleanUpBlocks(int streamIndex) {
 	std::set<ULONG_PTR>* mappedAddress = this->streamToMappedAddress[streamIndex + 2];
 	for (auto it = mappedAddress->begin(); it != mappedAddress->end();) {
-		if (*it == sm->getNthStream(streamIndex)->getStartPtr()) {
-			it++;
-			continue;
-		}
+		//if (*it == sm->getBucketStream(streamIndex)->getStartPtr()) {
+		//	it++;
+		//	continue;
+		//} usually the front is already unmapped through jsut sorting, would need extra logic
 		void* vptr = (void*)*it;
 		uint64_t blockSizePages = 1ULL << (blockSizePower - 12);
 		if (!MapUserPhysicalPages(vptr, blockSizePages, NULL)) {
@@ -97,6 +98,7 @@ void StreamPool::cleanUpBlocks(int streamIndex) {
 			exit(-1);
 		}
 		blockPool.push(ptrToPFN.find(vptr)->second);
+		ptrToPFN.erase(vptr);
 		StreamManager::unmapCount++;
 		it = mappedAddress->erase(it);
 	}
@@ -107,7 +109,16 @@ void StreamPool::getBlocksLeftBehindThread(int streamIndex, std::vector<int>& bl
 	ULONG_PTR startPtr = sm->getBucketStream(streamIndex)->getStartPtr();
 	for (auto it = mappedAddress->begin(); it != mappedAddress->end(); it++) {
 		ULONG_PTR currPtr = *it;
-		int blockIndex = (startPtr - currPtr) >> blockSizePower;
+		int blockIndex = (currPtr - startPtr) >> blockSizePower;
 		blocksLeft.push_back(blockIndex);
+	}
+}
+
+StreamPool::~StreamPool() {
+	uint64_t numPages = indexArrayPFN;
+	if (!FreeUserPhysicalPages(GetCurrentProcess(), &numPages, arrayPFN) || numPages != indexArrayPFN) {
+		std::cout << "free user physical pages failed";
+		std::cout << GetLastError();
+		exit(-1);
 	}
 }

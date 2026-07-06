@@ -65,8 +65,8 @@ __declspec(noinline) void BucketSort::sort(uint64_t* buf, uint64_t size, int shi
 			pNext[j] = (uint64_t*)sm->getBucketStream(j)->getStartPtr();
 			for (size_t k = 0; k <= j; k++) {
 				sm->cleanUpBlocks(k);
+				sm->mapBlockFromPool(sm->getBucketStream(j)->getStartPtr());
 			}
-			sm->mapBlockFromPool(sm->getBucketStream(j)->getStartPtr());
 		}
 		
 	}
@@ -75,6 +75,7 @@ __declspec(noinline) void BucketSort::sort(uint64_t* buf, uint64_t size, int shi
 //check the max amount of block used
 bool BucketSort::isSorted() {
 	for (uint64_t i = 1; i < size; i++) {
+		std::cout << outputBuffer[i] << "\n";
 		if (outputBuffer[i] < outputBuffer[i - 1]) {
 			std::cout << "Not sorted.\n";
 			return false;

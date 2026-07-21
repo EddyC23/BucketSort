@@ -29,7 +29,7 @@ StreamManager::StreamManager(uint64_t numStreams, uint64_t sizeStreamPower, uint
 	this->sizeBlockPower = sizeBlockPower;
 	this->numStreams = numStreams;
 	
-	StreamManager::preallocBlocks = (1ULL << (sizeStreamPower - sizeBlockPower)) * 256.0 / 255.0 + additionalBlocks;
+	StreamManager::preallocBlocks = (1ULL << (sizeStreamPower - sizeBlockPower)); //  * 256.0 / 255.0 + additionalBlocks;
 	this->blockPool = new StreamPool(StreamManager::preallocBlocks, sizeBlockPower, this);
 	
 	this->inputStream = new VortexS(sizeStreamPower, blockPool);

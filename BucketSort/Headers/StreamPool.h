@@ -15,10 +15,10 @@ public:
 	void requestAdditionalBlock();
 	uint64_t getSizeBlockPower();
 	void cleanUpBlocks(int streamIndex);
+	std::unordered_map <void*, PULONG_PTR> ptrToPFN;
 	void getBlocksLeftBehindThread(int streamIndex, std::vector<int>& blocksLeft);
 private:
 	std::stack<PULONG_PTR> blockPool;
-	std::unordered_map <void*, PULONG_PTR> ptrToPFN;
 	std::unordered_map <int, std::set <ULONG_PTR> *> streamToMappedAddress;
 	PULONG_PTR arrayPFN;
 	uint64_t sizeArrayPFN;

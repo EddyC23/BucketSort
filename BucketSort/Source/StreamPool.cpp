@@ -79,6 +79,7 @@ void StreamPool::requestAdditionalBlock() {
 	}
 	indexArrayPFN += pagesPerBlock;
 	StreamManager::requestedBlocks++;
+	//std::cout << StreamManager::requestedBlocks << std::endl;
 }
 uint64_t StreamPool::getSizeBlockPower() {
 	return blockSizePower;

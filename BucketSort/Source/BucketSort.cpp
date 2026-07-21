@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iomanip>
 
+uint64_t numWrites = 0;
 void BucketSort::printArray(uint64_t* ptr, uint64_t size) {
 	for (size_t i = 0; i < size; i++) {
 		printf("index %lld : %llx %llu\n", i, ptr[i], ptr[i]);
@@ -49,13 +50,18 @@ __declspec(noinline) void BucketSort::sort(uint64_t* buf, uint64_t size, int shi
 	for (uint64_t j = 0; j < numBuckets; j++) {
 		uint64_t sizeNext = pNext[j] - p[j];
 		if (shift == 0) {
+			//std::cout << "starting memcpy" << std::endl;
 			memcpy(outputBufferNext, p[j], sizeof(uint64_t) * sizeNext);
+			// std::cout << "done memcpy" << std::endl;
 			outputBufferNext += sizeNext;
+			numWrites += sizeNext;
 		}else if (sizeNext <= 32) {
-			std::sort(p[j], pNext[j]);
+			std::sort(p[j], pNext[j]); // problem without fixing shift?
+			//std::cout << "starting memcpy" << std::endl;
 			memcpy(outputBufferNext, p[j], sizeof(uint64_t) * sizeNext);
+			//std::cout << "done memcpy" << std::endl;
 			outputBufferNext += sizeNext;
-			
+			numWrites += sizeNext;
 		}
 		else {
 			sort(p[j], sizeNext, shift - 8, level + 1);
@@ -65,7 +71,7 @@ __declspec(noinline) void BucketSort::sort(uint64_t* buf, uint64_t size, int shi
 			pNext[j] = (uint64_t*)sm->getBucketStream(j)->getStartPtr();
 			for (size_t k = 0; k <= j; k++) {
 				sm->cleanUpBlocks(k);
-				sm->mapBlockFromPool(sm->getBucketStream(j)->getStartPtr());
+				sm->mapBlockFromPool(sm->getBucketStream(k)->getStartPtr());
 			}
 		}
 		
@@ -75,7 +81,6 @@ __declspec(noinline) void BucketSort::sort(uint64_t* buf, uint64_t size, int shi
 //check the max amount of block used
 bool BucketSort::isSorted() {
 	for (uint64_t i = 1; i < size; i++) {
-		std::cout << outputBuffer[i] << "\n";
 		if (outputBuffer[i] < outputBuffer[i - 1]) {
 			std::cout << "Not sorted.\n";
 			return false;

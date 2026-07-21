@@ -19,7 +19,7 @@ VortexS::VortexS(uint64_t sizeStreamPower, StreamPool* blockPool) {
 		std::cout << GetLastError();
 		exit(-1);
 	}
-
+	
 }
 
 void query(ULONG_PTR ptr) {
@@ -35,6 +35,12 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 
 	bool isAccessViolation = info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION;
 	bool isWriteFault = info->ExceptionRecord->ExceptionInformation[0];
+	if (blockPool->ptrToPFN.contains((void*)0x00000229BE4FFFE8)) {
+		std::cout << blockPool->ptrToPFN[(void*)0x00000229BE4FFFE8];
+	}
+	if (blockPool->ptrToPFN.contains((void*)0x00000229BE4FF000)) {
+		std::cout << blockPool->ptrToPFN[(void*)0x00000229BE4FF000];
+	}
 	if (!isAccessViolation) {
 		std::cout << "Not a access violation...\n";
 		return EXCEPTION_CONTINUE_SEARCH;
@@ -52,13 +58,14 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 		}
 		///////////////////
 		if (mbi.Protect !=  NULL) {
-			std::cout << "is this possible ? "; //i guess it is ? 
+			//std::cout << "is this possible ? "; //i guess it is ? 
+			//std::cout << std::hex << mbi.Protect << std::endl;
 			removeGuardPage(fptr);
 		}
 		else {
 			blockPool->mapBlockFromPool(fptr);
 		}
-		if (fptr != (ULONG_PTR)startPtr) { // do i need this bitshift? does it always perfectly align
+		if (fptr >> 12 != (ULONG_PTR)startPtr >> 12) { // do i need this bitshift? does it always perfectly align
 			uint64_t blockSizeBytes = 1ULL << sizeBlockPower;
 			setGuardPage(fptr - blockSizeBytes);
 		}
@@ -80,6 +87,13 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 		}
 		lastReadFault = fptr;
 		MEMORY_BASIC_INFORMATION mbi;
+		if (!VirtualQuery((void*)(fptr), &mbi, sizeof(mbi))) {
+			std::cout << "virtual query failed";
+			std::cout << GetLastError();
+			exit(-1);
+		}
+
+		//StreamManager::instance->printDebug();
 		if (!VirtualQuery((void*)(fptr + blockSizeBytes), &mbi, sizeof(mbi))) {
 			std::cout << "virtual query failed";
 			std::cout << GetLastError();
@@ -113,6 +127,8 @@ DWORD VortexS::setGuardPage(ULONG_PTR ptr) {
 
 
 DWORD VortexS::removeGuardPage(ULONG_PTR ptr) {
+	uint64_t mask = ~((1 << 12) - 1);
+	ptr &= mask;
 	DWORD oldProtect = 0;
 	if (!VirtualProtect((void*)ptr, 1, PAGE_READWRITE, &oldProtect)) {
 		std::cout << "virtual protect failed";

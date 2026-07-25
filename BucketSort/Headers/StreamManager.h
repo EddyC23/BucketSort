@@ -22,7 +22,6 @@ public:
 	static int requestedBlocks;
 	static int helper;
 	void printDebug();
-	std::vector<std::vector<int>> getBlocksLeftBehind();
 	std::vector<std::vector<int>> getBlocksLeftBehindThread();
 	void cleanUpBlocks(int i);
 	void mapBlockFromPool(ULONG_PTR ptr);

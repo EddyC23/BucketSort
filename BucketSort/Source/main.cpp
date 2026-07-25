@@ -13,9 +13,11 @@
 // debug trhead stuff
 #include <conio.h>
 void listenForQ() {
+	
 	while (true) {
 		int ch = _getch();
 		if (toupper(ch) == 'Q') {
+			exit(2);
 			StreamManager::instance->printDebug();
 		}
 	}
@@ -45,7 +47,7 @@ void runAll() {
 										SORTED,
 										REV_SORTED,
 										ALMOST_SORTED,
-										//PARETO_NONUNIFORM, // broken
+										PARETO_NONUNIFORM, // broken
 										PARETO_B2B,
 										PARETO_SHUFF,
 										FIB,
@@ -63,7 +65,7 @@ void runAll() {
 										R_SEQ,
 										WORST_CASE_BACKSCAN,
 										WORST_CASE_FSCAN,
-										 WORST_CASE_QSORT, // broken
+										WORST_CASE_QSORT, // broken
 										WC_ADVERSARIAL_MSD,
 										WC_ADVERSARIAL_LSD,
 										PD16,

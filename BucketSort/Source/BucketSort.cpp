@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
-
 uint64_t numWrites = 0;
 void BucketSort::printArray(uint64_t* ptr, uint64_t size) {
 	for (size_t i = 0; i < size; i++) {
@@ -32,6 +31,14 @@ void BucketSort::sort() {
 	outputBufferNext = outputBuffer;
 	sort(inputBuffer, size, 56, 0);
 }
+
+void mymemcpy(uint64_t* source, uint64_t* destination, uint64_t length) {
+	for (uint64_t i = 0; i < length; i++) {
+		destination[i] = source[i];
+	}
+
+} // my memcpy
+
 __declspec(noinline) void BucketSort::sort(uint64_t* buf, uint64_t size, int shift, int level) {
 	
 	
@@ -51,7 +58,9 @@ __declspec(noinline) void BucketSort::sort(uint64_t* buf, uint64_t size, int shi
 		uint64_t sizeNext = pNext[j] - p[j];
 		if (shift == 0) {
 			//std::cout << "starting memcpy" << std::endl;
-			memcpy(outputBufferNext, p[j], sizeof(uint64_t) * sizeNext);
+			//std::cout << "about to memcpy";
+			mymemcpy(p[j], outputBufferNext, sizeNext);
+			//memcpy(outputBufferNext, p[j], sizeof(uint64_t) * sizeNext);
 			// std::cout << "done memcpy" << std::endl;
 			outputBufferNext += sizeNext;
 			numWrites += sizeNext;

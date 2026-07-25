@@ -31,7 +31,9 @@ StreamPool::StreamPool(uint64_t numBlocks, uint64_t blockSizePower, StreamManage
 	indexArrayPFN = numBlocks * pagesPerBlock;
 }
 void StreamPool::mapBlockFromPool(ULONG_PTR ptr) {
-	void* vptr = (void*)ptr;
+	uint64_t mask = ~((1 << 12) - 1);
+	void* vptr = (void*)(ptr & mask);
+	//	void* vptr = (void*)ptr;
 	if (blockPool.size() == 0) {
 		requestAdditionalBlock();
 	}
@@ -91,12 +93,16 @@ void StreamPool::cleanUpBlocks(int streamIndex) {
 		//	it++;
 		//	continue;
 		//} usually the front is already unmapped through jsut sorting, would need extra logic
-		void* vptr = (void*)*it;
+		void* vptr = (void*)(*it & (~((1ULL << 12) - 1)));
 		uint64_t blockSizePages = 1ULL << (blockSizePower - 12);
 		if (!MapUserPhysicalPages(vptr, blockSizePages, NULL)) {
 			std::cout << "unmap block failed";
 			std::cout << GetLastError();
 			exit(-1);
+		}
+		auto b = ptrToPFN.find(vptr);
+		if (b == ptrToPFN.end()) {
+			std::cout << "abcd " << vptr;
 		}
 		blockPool.push(ptrToPFN.find(vptr)->second);
 		ptrToPFN.erase(vptr);

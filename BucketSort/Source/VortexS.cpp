@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <thread>
+ULONG_PTR lastReadFault = -1;
 VortexS::VortexS(uint64_t sizeStreamPower, StreamPool* blockPool) {
 
 	uint64_t allocSize = 8ULL * (1ULL << sizeStreamPower);
@@ -32,15 +33,9 @@ void query(ULONG_PTR ptr) {
 }
 
 LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
-
+	
 	bool isAccessViolation = info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION;
 	bool isWriteFault = info->ExceptionRecord->ExceptionInformation[0];
-	if (blockPool->ptrToPFN.contains((void*)0x00000229BE4FFFE8)) {
-		std::cout << blockPool->ptrToPFN[(void*)0x00000229BE4FFFE8];
-	}
-	if (blockPool->ptrToPFN.contains((void*)0x00000229BE4FF000)) {
-		std::cout << blockPool->ptrToPFN[(void*)0x00000229BE4FF000];
-	}
 	if (!isAccessViolation) {
 		std::cout << "Not a access violation...\n";
 		return EXCEPTION_CONTINUE_SEARCH;
@@ -74,7 +69,9 @@ LONG VortexS::handle_exception(PEXCEPTION_POINTERS info) {
 	else {
 		ULONG_PTR fptr = info->ExceptionRecord->ExceptionInformation[1];
 		uint64_t blockSizeBytes = 1ULL << blockPool->getSizeBlockPower();
-
+		if (fptr != (fptr & 0xFFFFFFFFFFFFF000)) {
+			std::cout << "Fault address isn't aligned " << std::hex << fptr << std::endl;
+		}
 		if (lastReadFault == -1) {
 			removeGuardPage(fptr);
 		}
@@ -127,15 +124,36 @@ DWORD VortexS::setGuardPage(ULONG_PTR ptr) {
 
 
 DWORD VortexS::removeGuardPage(ULONG_PTR ptr) {
+//	std::cout << "123" << " " << lastReadFault << " " << ptr;
 	uint64_t mask = ~((1 << 12) - 1);
 	ptr &= mask;
 	DWORD oldProtect = 0;
-	if (!VirtualProtect((void*)ptr, 1, PAGE_READWRITE, &oldProtect)) {
-		std::cout << "virtual protect failed";
-		std::cout << GetLastError();
-		exit(-1);
+	//i think the issue is there isnt even a page there?
+	if (lastReadFault == ptr) {
+		std::cout << "this is firing";
+		//if (!VirtualProtect((void*)(ptr + (1ULL << 12)), 1, PAGE_READWRITE, &oldProtect)) {
+		//	std::cout << "virtual protect failed";
+		//	std::cout << GetLastError();
+		//	exit(-1);
+		//}
+		blockPool->mapBlockFromPool((ptr + (1ULL << 12)) - (1ULL << sizeBlockPower));
+		
+	}
+	//if (blockPool->ptrToPFN.contains((void*)ptr)) {
+	//	std::cout << "1";
+	//}
+	//else {
+	//	std::cout << "hello";
+	//}
+	else {
+		if (!VirtualProtect((void*)ptr, 1, PAGE_READWRITE, &oldProtect)) {
+			std::cout << "virtual protect failed";
+			std::cout << GetLastError();
+			exit(-1);
+		}
 	}
 	StreamManager::guardCount--;
+	lastReadFault = ptr;
 	return oldProtect;
 	/*needed for both release mode and debug on laptop ? non deterministic
 	//MEMORY_BASIC_INFORMATION mbi;
